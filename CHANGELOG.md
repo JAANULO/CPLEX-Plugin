@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [1.4.7] - 2026-07-25
+
 ### Added
 - **Language Parser:** Added `main` keyword and `main { ... }` block syntax parsing support.
 
@@ -112,7 +114,8 @@
 - Updated `README.md` feature lists (EN/PL) to match current implementation.
 - Updated `do_zrobienia.md` with explicit `DONE` / `PARTIAL` / `TODO` status markers.
 
-[Unreleased]: https://github.com/JAANULO/CPLEX-Plugin/compare/1.4.6...HEAD
+[Unreleased]: https://github.com/JAANULO/CPLEX-Plugin/compare/1.4.7...HEAD
+[1.4.7]: https://github.com/JAANULO/CPLEX-Plugin/compare/1.4.6...1.4.7
 [1.4.6]: https://github.com/JAANULO/CPLEX-Plugin/compare/1.4.5...1.4.6
 [1.4.5]: https://github.com/JAANULO/CPLEX-Plugin/compare/1.4.4...1.4.5
 [1.4.4]: https://github.com/JAANULO/CPLEX-Plugin/compare/1.4.2...1.4.4
