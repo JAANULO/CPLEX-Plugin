@@ -94,6 +94,7 @@ private item_ ::= declaration | SEMICOLON
 // Declaration can be of various types
 declaration ::= varDeclaration
               | dvarDeclaration
+              | dexprDeclaration
               | objectiveDeclaration
               | constraintSection
               | executeBlock
@@ -102,7 +103,7 @@ declaration ::= varDeclaration
               | usingDeclaration
 
 // Generalized types (basic, tuples, or sets of them)
-private baseType ::= INT | FLOAT | BOOLEAN | STRING | RANGE
+private baseType ::= (INT | FLOAT) PLUS? | BOOLEAN | STRING | RANGE
 private typeRef ::= baseType | ID | LBRACE (baseType | ID) RBRACE
 
 // Data variable declaration (supports arrays, ellipses, and ranges)
@@ -116,10 +117,18 @@ varDeclaration ::= typeRef ID (LBRACKET expression RBRACKET)* (EQ (ELLIPSIS | ex
 // Using declaration (enables CP engine)
 usingDeclaration ::= USING CP SEMICOLON { pin=1 recoverWhile=statement_recover }
 
-// Decision variable declaration (supports arrays)
-dvarDeclaration ::= DVAR (INT | FLOAT | BOOLEAN | INTERVAL | SEQUENCE) ID (LBRACKET expression RBRACKET)* (IN rangeExpression)? SEMICOLON { 
+// Decision variable declaration (supports arrays, intervals, sequences, sign restrictions and CP clauses)
+dvarDeclaration ::= DVAR ((INT | FLOAT) PLUS? | BOOLEAN | INTERVAL | SEQUENCE) ID (LBRACKET (oplIterator | expression) RBRACKET)* ( (IN | ID) (ALL LPAREN oplIterator (COMMA oplIterator)* RPAREN)? expression )* SEMICOLON { 
   pin=1 
   recoverWhile=statement_recover 
+  implements="com.github.cplexopl.psi.OplNamedElement"
+  mixin="com.github.cplexopl.psi.OplNamedElementImpl"
+}
+
+// Decision expression declaration (named formulas evaluated by solver)
+dexprDeclaration ::= DEXPR typeRef ID (LBRACKET (oplIterator | expression) RBRACKET)* EQ expression SEMICOLON {
+  pin=1
+  recoverWhile=statement_recover
   implements="com.github.cplexopl.psi.OplNamedElement"
   mixin="com.github.cplexopl.psi.OplNamedElementImpl"
 }
@@ -131,7 +140,7 @@ objectiveDeclaration ::= (MINIMIZE | MAXIMIZE) expression SEMICOLON { pin=1 reco
 constraintSection ::= SUBJECT TO LBRACE constraintItem* RBRACE { pin=1 }
 
 // Iterator definition for loops and sums (e.g. i in 1..9 : x != 0)
-oplIterator ::= ID IN expression (COLON constraintExpression)?
+oplIterator ::= ID (COMMA ID)* IN expression (COLON constraintExpression)?
 
 // Conflict guard: optional label (private to avoid breaking Annotator)
 private label ::= ID COLON
@@ -141,7 +150,7 @@ constraintItem ::= label? constraintExpression SEMICOLON
                  | FORALL LPAREN oplIterator (COMMA oplIterator)* RPAREN constraintItem
 
 // Hidden helper rule: constraint may (but need not) have a relational operator
-private constraintExpression ::= expression ((LE | LT | GT | GE | EQ | EQEQ | NEQ) expression)?
+private constraintExpression ::= expression ((LE | LT | GT | GE | EQ | EQEQ | NEQ) expression)*
 
 // Execute block - IBM Script code (JavaScript-like)
 executeBlock ::= (EXECUTE | MAIN) ID? executeBody { pin=1 recoverWhile=statement_recover }
@@ -171,7 +180,7 @@ term ::= factor ((STAR | SLASH) factor)*
 
 // Extended factor: supports sums, all loops, CP functions, arrays, numbers and variables
 factor ::= (PLUS | MINUS) factor
-         | (SUM | ALL) LPAREN oplIterator (COMMA oplIterator)* RPAREN expression
+         | (SUM | ALL | MINIMIZE | MAXIMIZE | ID) LPAREN oplIterator (COMMA oplIterator)* RPAREN expression
          | (ID | ALLDIFFERENT | PACK | PULSE | STEP) ( LPAREN (expression (COMMA expression)*)? RPAREN )? ( (DOT ID) | (LBRACKET expression RBRACKET) )*
          | INTEGER_LITERAL
          | FLOAT_LITERAL

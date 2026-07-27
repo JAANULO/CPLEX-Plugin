@@ -32,10 +32,10 @@ class OplLiveTemplatesTest : BasePlatformTestCase() {
             
             // === CONSTRAINTS ===
             subject to {
-            forall(i in R) {
-            ct_constraint:
-            x[i] >= 0;
-            }
+                forall(i in R) {
+                    ct_constraint:
+                    x[i] >= 0;
+                }
             }
             
             """.trimIndent()

@@ -43,7 +43,7 @@ BLOCK_COMMENT   = "/*"([^*]|\*[^/])*"*/"
 {BLOCK_COMMENT}         { return OplTypes.BLOCK_COMMENT; }
 
 // Keywords - MUST come before the ID rule
-"CP"                    { return OplTypes.CP; }
+"CP" | "cp"             { return OplTypes.CP; }
 "interval"              { return OplTypes.INTERVAL; }
 "sequence"              { return OplTypes.SEQUENCE; }
 "using"                 { return OplTypes.USING; }
