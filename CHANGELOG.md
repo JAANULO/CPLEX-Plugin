@@ -4,6 +4,11 @@
 
 ## [Unreleased]
 
+### Added
+- **Language Parser:** Added full support for Constraint Programming (`using CP;`, `dexpr`, `size`, `in all`).
+- **Language Parser:** Added support for signed numeric types (`float+`, `int+`), chained inequalities (`1 <= u[i] <= n`), and multi-iterator loops (`i, j in Cities`).
+- **Annotator:** Added CP built-in functions (`endOf`, `noOverlap`, etc.) to static analyzer built-ins and fixed `dvar` declaration identifier resolution.
+
 ## [1.4.7] - 2026-07-25
 
 ### Added
