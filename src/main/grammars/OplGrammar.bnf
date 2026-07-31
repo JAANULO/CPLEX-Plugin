@@ -29,7 +29,9 @@
     ELSE        = 'else'
     THEN        = 'then'
     INT         = 'int'
+    INT_PLUS    = 'int+'
     FLOAT       = 'float'
+    FLOAT_PLUS  = 'float+'
     BOOLEAN     = 'boolean'
     STRING      = 'string'
     RANGE       = 'range'
@@ -46,6 +48,7 @@
     STEP        = 'step'
     ALLDIFFERENT= 'allDifferent'
     PACK        = 'pack'
+    SIZE        = 'size'
 
     // Operators
     SEMICOLON   = ';'
@@ -69,6 +72,7 @@
     OROR        = '||'
     NOT         = '!'
     MOD         = '%'
+    QUESTION    = '?'
     LBRACE      = '{'
     RBRACE      = '}'
     LBRACKET    = '['
@@ -101,10 +105,14 @@ declaration ::= varDeclaration
               | tupleDeclaration
               | includeDeclaration
               | usingDeclaration
+              | assertDeclaration
 
 // Generalized types (basic, tuples, or sets of them)
-private baseType ::= (INT | FLOAT) PLUS? | BOOLEAN | STRING | RANGE
+private baseType ::= (INT | FLOAT) PLUS? | INT_PLUS | FLOAT_PLUS | BOOLEAN | STRING | RANGE
 private typeRef ::= baseType | ID | LBRACE (baseType | ID) RBRACE
+
+// Top-level assert declaration
+assertDeclaration ::= ASSERT expression SEMICOLON { pin=1 recoverWhile=statement_recover }
 
 // Data variable declaration (supports arrays, ellipses, and ranges)
 varDeclaration ::= typeRef ID (LBRACKET expression RBRACKET)* (EQ (ELLIPSIS | expression))? SEMICOLON { 
@@ -118,7 +126,7 @@ varDeclaration ::= typeRef ID (LBRACKET expression RBRACKET)* (EQ (ELLIPSIS | ex
 usingDeclaration ::= USING CP SEMICOLON { pin=1 recoverWhile=statement_recover }
 
 // Decision variable declaration (supports arrays, intervals, sequences, sign restrictions and CP clauses)
-dvarDeclaration ::= DVAR ((INT | FLOAT) PLUS? | BOOLEAN | INTERVAL | SEQUENCE) ID (LBRACKET (oplIterator | expression) RBRACKET)* ( (IN | ID) (ALL LPAREN oplIterator (COMMA oplIterator)* RPAREN)? expression )* SEMICOLON { 
+dvarDeclaration ::= DVAR ((INT | FLOAT) PLUS? | INT_PLUS | FLOAT_PLUS | BOOLEAN | INTERVAL | SEQUENCE) ID (LBRACKET (oplIterator | expression) RBRACKET)* ( (IN ALL | IN | SIZE | ID) (LPAREN oplIterator (COMMA oplIterator)* RPAREN)? expression )* SEMICOLON { 
   pin=1 
   recoverWhile=statement_recover 
   implements="com.github.cplexopl.psi.OplNamedElement"
@@ -140,23 +148,20 @@ objectiveDeclaration ::= (MINIMIZE | MAXIMIZE) expression SEMICOLON { pin=1 reco
 constraintSection ::= SUBJECT TO LBRACE constraintItem* RBRACE { pin=1 }
 
 // Iterator definition for loops and sums (e.g. i in 1..9 : x != 0)
-oplIterator ::= ID (COMMA ID)* IN expression (COLON constraintExpression)?
+oplIterator ::= ID (COMMA ID)* IN expression (COLON expression)?
 
 // Conflict guard: optional label (private to avoid breaking Annotator)
 private label ::= ID COLON
 
-constraintItem ::= label? constraintExpression SEMICOLON
-                 | FORALL LPAREN oplIterator (COMMA oplIterator)* RPAREN LBRACE constraintItem* RBRACE
-                 | FORALL LPAREN oplIterator (COMMA oplIterator)* RPAREN constraintItem
-
-// Hidden helper rule: constraint may (but need not) have a relational operator
-private constraintExpression ::= expression ((LE | LT | GT | GE | EQ | EQEQ | NEQ) expression)*
+constraintItem ::= label? expression SEMICOLON
+                 | label? FORALL LPAREN oplIterator (COMMA oplIterator)* RPAREN LBRACE constraintItem* RBRACE
+                 | label? FORALL LPAREN oplIterator (COMMA oplIterator)* RPAREN constraintItem
 
 // Execute block - IBM Script code (JavaScript-like)
 executeBlock ::= (EXECUTE | MAIN) ID? executeBody { pin=1 recoverWhile=statement_recover }
 executeBody ::= LBRACE executeItem* RBRACE
 private executeItem ::= executeBody | executeToken
-private executeToken ::= ID | INTEGER_LITERAL | FLOAT_LITERAL | STRING_LITERAL | LPAREN | RPAREN | LBRACKET | RBRACKET | PLUS | MINUS | STAR | SLASH | EQ | EQEQ | NEQ | LT | LE | GT | GE | SEMICOLON | COMMA | DOT | DOTDOT | ELLIPSIS | COLON | INT | FLOAT | BOOLEAN | STRING | RANGE | DVAR | DEXPR | TUPLE | MINIMIZE | MAXIMIZE | SUBJECT_TO | INCLUDE | EXECUTE | MAIN | FORALL | EXISTS | IN | TO | IF | ELSE | THEN | USING | CP | INTERVAL | SEQUENCE | WITH | ASSERT | SUM | ALL | PULSE | STEP | ALLDIFFERENT | PACK | ANDAND | OROR | NOT | MOD
+private executeToken ::= ID | INTEGER_LITERAL | FLOAT_LITERAL | STRING_LITERAL | LPAREN | RPAREN | LBRACKET | RBRACKET | PLUS | MINUS | STAR | SLASH | EQ | EQEQ | NEQ | LT | LE | GT | GE | SEMICOLON | COMMA | DOT | DOTDOT | ELLIPSIS | COLON | QUESTION | INT | FLOAT | BOOLEAN | STRING | RANGE | DVAR | DEXPR | TUPLE | MINIMIZE | MAXIMIZE | SUBJECT | TO | INCLUDE | EXECUTE | MAIN | FORALL | EXISTS | IN | IF | ELSE | THEN | USING | CP | INTERVAL | SEQUENCE | WITH | ASSERT | SUM | ALL | PULSE | STEP | ALLDIFFERENT | PACK | SIZE | ANDAND | OROR | NOT | MOD
 
 // Tuple declaration (struct-like type)
 tupleDeclaration ::= TUPLE ID LBRACE tupleField* RBRACE SEMICOLON? { 
@@ -171,10 +176,12 @@ tupleField ::= typeRef ID (LBRACKET expression RBRACKET)* SEMICOLON { pin=2 }
 includeDeclaration ::= INCLUDE STRING_LITERAL SEMICOLON { pin=1 }
 
 // Expressions (simplified)
-// Ranges - allows the parser to understand notation like 1..NbItems
-rangeExpression ::= additiveExpression DOTDOT additiveExpression
-
-expression ::= rangeExpression | additiveExpression
+expression ::= logicalOrExpression
+private logicalOrExpression ::= logicalAndExpression (OROR logicalAndExpression)*
+private logicalAndExpression ::= ternaryExpression (ANDAND ternaryExpression)*
+private ternaryExpression ::= relationalExpression (QUESTION expression COLON expression)?
+private relationalExpression ::= rangeExpression ((LE | LT | GT | GE | EQ | EQEQ | NEQ | IN) rangeExpression)*
+private rangeExpression ::= additiveExpression (DOTDOT additiveExpression)?
 private additiveExpression ::= term ((PLUS | MINUS) term)*
 term ::= factor ((STAR | SLASH) factor)*
 
@@ -189,4 +196,4 @@ factor ::= (PLUS | MINUS) factor
          | LPAREN expression RPAREN
 
 // Recovery rule: "Skip everything until a new declaration start or semicolon"
-private statement_recover ::= !(INT | FLOAT | BOOLEAN | INTERVAL | SEQUENCE | STRING | RANGE | DVAR | DEXPR | TUPLE | MINIMIZE | MAXIMIZE | SUBJECT | INCLUDE | EXECUTE | MAIN | USING | LBRACE | ID | SEMICOLON | RBRACE)
+private statement_recover ::= !(INT | FLOAT | BOOLEAN | INTERVAL | SEQUENCE | STRING | RANGE | DVAR | DEXPR | TUPLE | MINIMIZE | MAXIMIZE | SUBJECT | INCLUDE | EXECUTE | MAIN | USING | LBRACE | ID | SEMICOLON | RBRACE | ASSERT)

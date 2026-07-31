@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [1.4.8] - 2026-07-31
+
 ### Added
 - **Language Parser:** Added full support for Constraint Programming (`using CP;`, `dexpr`, `size`, `in all`).
 - **Language Parser:** Added support for signed numeric types (`float+`, `int+`), chained inequalities (`1 <= u[i] <= n`), and multi-iterator loops (`i, j in Cities`).

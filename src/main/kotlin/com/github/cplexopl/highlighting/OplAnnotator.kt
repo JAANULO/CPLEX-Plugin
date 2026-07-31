@@ -87,7 +87,7 @@ class OplAnnotator : Annotator {
                     "endOf", "startOf", "lengthOf", "endBeforeStart", "startBeforeEnd",
                     "startAtEnd", "endAtStart", "startAtStart", "endAtEnd",
                     "noOverlap", "size", "card", "ord", "first", "last",
-                    "item", "in", "length", "typeOf", "presenceOf", "val"
+                    "item", "in", "length", "typeOf", "presenceOf", "val", "powerset"
                 )
 
                 if (builtins.contains(name)) return
