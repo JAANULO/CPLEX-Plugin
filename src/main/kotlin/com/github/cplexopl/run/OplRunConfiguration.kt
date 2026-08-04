@@ -48,7 +48,7 @@ class OplRunConfiguration(
             if (globalPath.isNotEmpty()) return globalPath
 
             // 3. Fallback: If user hasn't set anything, try to guess
-            return detectCplexPath()
+            return com.github.cplexopl.utils.CplexPathFinder.find() ?: ""
         }
         set(value) { options.cplexPath = value }
 
@@ -116,7 +116,9 @@ class OplRunConfiguration(
                                              decodedValue == "true" || 
                                              decodedValue == "false"
                     
-                    val escapedValue = decodedValue.replace("\"", "\\\"")
+                    val escapedValue = decodedValue
+                        .replace("\\", "\\\\")
+                        .replace("\"", "\\\"")
                     val formattedValue = if (isNumericOrBoolean) escapedValue else "\"$escapedValue\""
                     result.appendLine("  cplex.$name = $formattedValue;")
                 }
@@ -137,41 +139,6 @@ class OplRunConfiguration(
                 .replace("&amp;", "&")
         }
 
-        // Automatic detection of CPLEX path on various operating systems
-        fun detectCplexPath(): String {
-            val os = System.getProperty("os.name").lowercase()
-
-            // 1. First check system environment variable of IBM installer
-            val envDir = System.getenv("CPLEX_STUDIO_DIR")
-            if (!envDir.isNullOrEmpty()) {
-                val envPath = when {
-                    os.contains("windows") -> "$envDir\\opl\\bin\\x64_win64\\oplrun.exe"
-                    os.contains("mac") -> "$envDir/opl/bin/x86-64_osx/oplrun"
-                    else -> "$envDir/opl/bin/x86-64_linux/oplrun"
-                }
-                if (File(envPath).exists()) return envPath
-            }
-
-            // 2. If variable is missing, check typical installation paths
-            val candidates = when {
-                os.contains("windows") -> listOf(
-                    "C:\\Program Files\\IBM\\ILOG\\CPLEX_Studio2211\\opl\\bin\\x64_win64\\oplrun.exe",
-                    "C:\\Program Files\\IBM\\ILOG\\CPLEX_Studio221\\opl\\bin\\x64_win64\\oplrun.exe",
-                    "C:\\Program Files\\IBM\\ILOG\\CPLEX_Studio2010\\opl\\bin\\x64_win64\\oplrun.exe"
-                )
-                os.contains("mac") -> listOf(
-                    "/Applications/CPLEX_Studio2211/opl/bin/x86-64_osx/oplrun",
-                    "/Applications/CPLEX_Studio221/opl/bin/x86-64_osx/oplrun"
-                )
-                else -> listOf( // Linux
-                    "/opt/ibm/ILOG/CPLEX_Studio2211/opl/bin/x86-64_linux/oplrun",
-                    "/opt/ibm/ILOG/CPLEX_Studio221/opl/bin/x86-64_linux/oplrun",
-                    System.getProperty("user.home") + "/CPLEX_Studio2211/opl/bin/x86-64_linux/oplrun"
-                )
-            }
-            
-            return candidates.firstOrNull { File(it).exists() } ?: ""
-        }
     }
 }
 
@@ -187,6 +154,11 @@ class OplRunState(
             val tempFileSuffix = "_temp_${UUID.randomUUID()}_${originalModel.name}"
             val tempDir = File(System.getProperty("java.io.tmpdir"))
             val tempModelFile = File(tempDir, tempFileSuffix)
+            tempModelFile.createNewFile()
+            tempModelFile.setReadable(false, false)
+            tempModelFile.setReadable(true, true)
+            tempModelFile.setWritable(false, false)
+            tempModelFile.setWritable(true, true)
             tempModelFile.deleteOnExit()
 
             try {

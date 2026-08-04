@@ -9,8 +9,13 @@ import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
 import com.intellij.lang.annotation.HighlightSeverity
 import com.github.cplexopl.psi.*
+import com.intellij.openapi.diagnostic.Logger
 
 class OplAnnotator : Annotator {
+    companion object {
+        private val LOG = Logger.getInstance(OplAnnotator::class.java)
+    }
+
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         // PROTECTION SHIELD: If any error occurs, catch it, thanks to which IDE never again hangs on "Analyzing"
         try {
@@ -161,31 +166,50 @@ class OplAnnotator : Annotator {
                 } else {
 
                     // --- 2. Scope-aware analysis (Scope in loops and multiple iterators) ---
-                    var isLocalVariable = false
-                    var currentNode: PsiElement? = element.parent
-
-                    while (currentNode != null && currentNode !is com.intellij.psi.PsiFile) {
-                        if (currentNode is OplOplIterator) {
-                            val inNode = currentNode.node.findChildByType(OplTypes.IN)
-                            val iterIds = currentNode.node.getChildren(null)
-                                .filter { it.elementType == OplTypes.ID && (inNode == null || it.startOffset < inNode.startOffset) }
-                            if (iterIds.any { it.text == name }) {
-                                isLocalVariable = true
-                                break
-                            }
-                        }
-                        if (currentNode is OplFactor || currentNode is OplConstraintItem || currentNode is OplDvarDeclaration || currentNode is OplDexprDeclaration || currentNode is OplVarDeclaration) {
-                            val iterators = PsiTreeUtil.findChildrenOfType(currentNode, OplOplIterator::class.java)
+                    val localScopeVariables = CachedValuesManager.getCachedValue(file) {
+                        val map = mutableMapOf<PsiElement, Set<String>>()
+                        
+                        val scopeNodes = PsiTreeUtil.findChildrenOfAnyType(file, 
+                            OplFactor::class.java, 
+                            OplConstraintItem::class.java, 
+                            OplDvarDeclaration::class.java, 
+                            OplDexprDeclaration::class.java, 
+                            OplVarDeclaration::class.java
+                        )
+                        
+                        for (node in scopeNodes) {
+                            val iterators = PsiTreeUtil.findChildrenOfType(node, OplOplIterator::class.java)
+                            val vars = mutableSetOf<String>()
                             for (iter in iterators) {
                                 val inNode = iter.node.findChildByType(OplTypes.IN)
                                 val iterIds = iter.node.getChildren(null)
                                     .filter { it.elementType == OplTypes.ID && (inNode == null || it.startOffset < inNode.startOffset) }
-                                if (iterIds.any { it.text == name }) {
-                                    isLocalVariable = true
-                                    break
-                                }
+                                    .map { it.text }
+                                vars.addAll(iterIds)
                             }
-                            if (isLocalVariable) break
+                            if (vars.isNotEmpty()) map[node] = vars
+                        }
+                        
+                        val allIterators = PsiTreeUtil.findChildrenOfType(file, OplOplIterator::class.java)
+                        for (iter in allIterators) {
+                            val inNode = iter.node.findChildByType(OplTypes.IN)
+                            val iterIds = iter.node.getChildren(null)
+                                .filter { it.elementType == OplTypes.ID && (inNode == null || it.startOffset < inNode.startOffset) }
+                                .map { it.text }
+                            if (iterIds.isNotEmpty()) map[iter] = iterIds.toSet()
+                        }
+                        
+                        CachedValueProvider.Result.create(map, PsiModificationTracker.MODIFICATION_COUNT)
+                    }
+
+                    var isLocalVariable = false
+                    var currentNode: PsiElement? = element.parent
+
+                    while (currentNode != null && currentNode !is com.intellij.psi.PsiFile) {
+                        val vars = localScopeVariables[currentNode]
+                        if (vars != null && vars.contains(name)) {
+                            isLocalVariable = true
+                            break
                         }
                         currentNode = currentNode.parent
                     }
@@ -197,8 +221,9 @@ class OplAnnotator : Annotator {
                     }
                 }
             }
-        } catch (_: Exception) {
+        } catch (e: Exception) {
             // Suppress critical PSI exceptions so IDE continues to work
+            LOG.warn("OplAnnotator failed on element: ${element.text.take(50)}", e)
         }
     }
 }

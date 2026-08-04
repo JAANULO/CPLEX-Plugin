@@ -1,4 +1,4 @@
-// Dane testowe do problemu plecakowego
+// Test data for the knapsack problem
 Capacity = 15;
 
 Value = [4, 2, 1, 2, 10];

@@ -48,7 +48,7 @@ class OplRunConfigurationProducer : LazyRunConfigurationProducer<OplRunConfigura
         }
 
         // Detect CPLEX path
-        val detectedPath = OplRunConfiguration.detectCplexPath()
+        val detectedPath = com.github.cplexopl.utils.CplexPathFinder.find() ?: ""
         if (detectedPath.isNotEmpty()) {
             configuration.cplexPath = detectedPath
         }

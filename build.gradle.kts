@@ -9,7 +9,7 @@ plugins {
     alias(libs.plugins.changelog)
     alias(libs.plugins.qodana)
     alias(libs.plugins.kover)
-    // Aktualizacja tej linii:
+    // Update of this line:
     id("org.jetbrains.grammarkit") version "2022.3.2.2"
 }
 

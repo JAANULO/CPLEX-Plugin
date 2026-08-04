@@ -60,16 +60,6 @@ class GeneratePythonRunnerAction : AnAction() {
                         "Please ensure doopl is installed to run the script. Run: pip install doopl",
                         NotificationType.INFORMATION
                     )
-                    .addAction(
-                        com.intellij.notification.NotificationAction.createSimpleExpiring("Install doopl") {
-                            try {
-                                com.intellij.execution.configurations.GeneralCommandLine("pip", "install", "doopl").createProcess()
-                                Messages.showInfoMessage(project, "Installation of doopl started in the background.", "Installation")
-                            } catch (e: Exception) {
-                                Messages.showErrorDialog(project, "Failed to start pip: ${e.message}", "Error")
-                            }
-                        }
-                    )
                     .notify(project)
             } catch (ex: Exception) {
                 Messages.showErrorDialog(project, "Error creating file: ${ex.message}", "Error")

@@ -72,6 +72,7 @@ class OplRunConfigurationTest : BasePlatformTestCase() {
                   <category name="cplex">
                     <setting name="path" value="file&amp;name.txt"/>
                     <setting name="quote" value="&quot;test&quot;"/>
+                    <setting name="backslash" value="C:\path\&quot;file.txt&quot;"/>
                   </category>
                 </settings>
             """.trimIndent(), Charsets.UTF_8)
@@ -80,6 +81,28 @@ class OplRunConfigurationTest : BasePlatformTestCase() {
             
             assertTrue("Ampersand nie został zdekodowany prawidłowo", executeBlock.contains("cplex.path = \"file&name.txt\";"))
             assertTrue("Znaki cudzysłowu nie zostały zdekodowane prawidłowo", executeBlock.contains("cplex.quote = \"\\\"test\\\"\";"))
+            assertTrue("Znak backslash nie został escapowany prawidłowo", executeBlock.contains("cplex.backslash = \"C:\\\\path\\\\\\\"file.txt\\\"\";"))
+        } finally {
+            tempOpsFile.delete()
+        }
+    }
+    
+    fun testGenerateExecuteBlockXxeProtection() {
+        val tempOpsFile = java.io.File.createTempFile("test_settings_xxe", ".ops")
+        try {
+            tempOpsFile.writeText("""
+                <?xml version="1.0" encoding="UTF-8"?>
+                <!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///non_existent_file.txt">]>
+                <settings version="2">
+                  <category name="cplex">
+                    <setting name="workmem" value="&xxe;"/>
+                  </category>
+                </settings>
+            """.trimIndent(), Charsets.UTF_8)
+
+            val executeBlock = OplRunConfiguration.generateExecuteBlock(tempOpsFile.absolutePath)
+            
+            assertTrue("Blok execute nie powinien zostać poprawnie sparsowany z wstrzyknięciem zewnętrznej encji (XXE)", executeBlock.isEmpty())
         } finally {
             tempOpsFile.delete()
         }

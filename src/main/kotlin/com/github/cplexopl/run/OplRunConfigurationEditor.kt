@@ -59,7 +59,7 @@ class OplRunConfigurationEditor(private val project: Project) : SettingsEditor<O
 
     private val autoDetectButton = JButton("Auto-Detect").apply {
         addActionListener {
-            val foundPath = CplexPathFinder.findDefaultOplrunPath()
+            val foundPath = CplexPathFinder.find()
             if (foundPath != null) {
                 cplexPathField.text = foundPath
                 OplSettingsState.instance.savedCplexPath = foundPath // Global save!

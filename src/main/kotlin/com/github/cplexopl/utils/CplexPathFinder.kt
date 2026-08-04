@@ -5,6 +5,23 @@ import java.io.File
 
 object CplexPathFinder {
 
+    fun find(): String? {
+        val envPath = findFromEnvVariable()
+        if (envPath != null && File(envPath).exists()) {
+            return envPath
+        }
+        return findDefaultOplrunPath()
+    }
+
+    private fun findFromEnvVariable(): String? {
+        val envDir = System.getenv("CPLEX_STUDIO_DIR") ?: return null
+        return when {
+            SystemInfo.isWindows -> "$envDir\\opl\\bin\\x64_win64\\oplrun.exe"
+            SystemInfo.isMac -> "$envDir/opl/bin/x86-64_osx/oplrun"
+            else -> "$envDir/opl/bin/x86-64_linux/oplrun"
+        }
+    }
+
     /**
      * Scans default installation paths looking for CPLEX engine.
      * Returns absolute path to oplrun.exe or null if not found.

@@ -40,7 +40,7 @@ class RunOplModelAction : AnAction() {
             val datFile = file.parent?.findChild("${file.nameWithoutExtension}.dat")
             if (datFile != null) oplConfig.dataFile = datFile.path
 
-            val cplexPath = OplRunConfiguration.detectCplexPath()
+            val cplexPath = com.github.cplexopl.utils.CplexPathFinder.find() ?: ""
             if (cplexPath.isNotEmpty()) oplConfig.cplexPath = cplexPath
 
             runManager.addConfiguration(newConfig)
