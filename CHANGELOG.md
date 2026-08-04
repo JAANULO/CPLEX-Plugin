@@ -4,6 +4,11 @@
 
 ## [Unreleased]
 
+## [1.4.9] - 2026-08-04
+
+### Added
+- **Language Parser:** Added full support in the lexer and grammar for the `key` modifier in tuples and the logical implication operator `=>`.
+
 ## [1.4.8] - 2026-07-31
 
 ### Added
