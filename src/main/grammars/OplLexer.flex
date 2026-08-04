@@ -66,6 +66,7 @@ BLOCK_COMMENT   = "/*"([^*]|\*[^/])*"*/"
 "string"                { return OplTypes.STRING; }
 "range"                 { return OplTypes.RANGE; }
 "tuple"                 { return OplTypes.TUPLE; }
+"key"                   { return OplTypes.KEY; }
 "dvar"                  { return OplTypes.DVAR; }
 "dexpr"                 { return OplTypes.DEXPR; }
 "execute"               { return OplTypes.EXECUTE; }
@@ -92,6 +93,7 @@ BLOCK_COMMENT   = "/*"([^*]|\*[^/])*"*/"
 "..."                   { return OplTypes.ELLIPSIS; }
 ".."                    { return OplTypes.DOTDOT; }
 "=="                    { return OplTypes.EQEQ; }
+"=>"                    { return OplTypes.IMPLIES; }
 "<="                    { return OplTypes.LE; }
 ">="                    { return OplTypes.GE; }
 "!="                    { return OplTypes.NEQ; }

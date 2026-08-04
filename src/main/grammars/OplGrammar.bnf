@@ -163,7 +163,7 @@ constraintItem ::= label? expression SEMICOLON
 executeBlock ::= (EXECUTE | MAIN) ID? executeBody { pin=1 recoverWhile=statement_recover }
 executeBody ::= LBRACE executeItem* RBRACE
 private executeItem ::= executeBody | executeToken
-private executeToken ::= ID | INTEGER_LITERAL | FLOAT_LITERAL | STRING_LITERAL | LPAREN | RPAREN | LBRACKET | RBRACKET | PLUS | MINUS | STAR | SLASH | EQ | EQEQ | NEQ | LT | LE | GT | GE | SEMICOLON | COMMA | DOT | DOTDOT | ELLIPSIS | COLON | QUESTION | INT | FLOAT | BOOLEAN | STRING | RANGE | DVAR | DEXPR | TUPLE | MINIMIZE | MAXIMIZE | SUBJECT | TO | INCLUDE | EXECUTE | MAIN | FORALL | EXISTS | IN | IF | ELSE | THEN | USING | CP | INTERVAL | SEQUENCE | WITH | ASSERT | SUM | ALL | PULSE | STEP | ALLDIFFERENT | PACK | SIZE | ANDAND | OROR | NOT | MOD
+private executeToken ::= ID | INTEGER_LITERAL | FLOAT_LITERAL | STRING_LITERAL | LPAREN | RPAREN | LBRACKET | RBRACKET | PLUS | MINUS | STAR | SLASH | EQ | EQEQ | NEQ | LT | LE | GT | GE | SEMICOLON | COMMA | DOT | DOTDOT | ELLIPSIS | COLON | QUESTION | INT | FLOAT | BOOLEAN | STRING | RANGE | DVAR | DEXPR | TUPLE | KEY | MINIMIZE | MAXIMIZE | SUBJECT | TO | INCLUDE | EXECUTE | MAIN | FORALL | EXISTS | IN | IF | ELSE | THEN | USING | CP | INTERVAL | SEQUENCE | WITH | ASSERT | SUM | ALL | PULSE | STEP | ALLDIFFERENT | PACK | SIZE | ANDAND | OROR | NOT | MOD | IMPLIES
 
 // Tuple declaration (struct-like type)
 tupleDeclaration ::= TUPLE ID LBRACE tupleField* RBRACE SEMICOLON? { 
@@ -172,13 +172,14 @@ tupleDeclaration ::= TUPLE ID LBRACE tupleField* RBRACE SEMICOLON? {
   implements="com.github.cplexopl.psi.OplNamedElement"
   mixin="com.github.cplexopl.psi.OplNamedElementImpl"
 }
-tupleField ::= typeRef ID (LBRACKET expression RBRACKET)* SEMICOLON { pin=2 }
+tupleField ::= KEY? typeRef ID (LBRACKET expression RBRACKET)* SEMICOLON { pin=2 }
 
 // Include another file
 includeDeclaration ::= INCLUDE STRING_LITERAL SEMICOLON { pin=1 }
 
 // Expressions (simplified)
-expression ::= logicalOrExpression
+expression ::= implicationExpression
+private implicationExpression ::= logicalOrExpression (IMPLIES logicalOrExpression)*
 private logicalOrExpression ::= logicalAndExpression (OROR logicalAndExpression)*
 private logicalAndExpression ::= ternaryExpression (ANDAND ternaryExpression)*
 private ternaryExpression ::= relationalExpression (QUESTION expression COLON expression)?
