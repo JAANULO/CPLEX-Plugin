@@ -1,5 +1,9 @@
+import java.io.File
 import java.lang.management.ManagementFactory
 import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Collections
 import org.gradle.api.tasks.testing.TestListener
 import org.jetbrains.changelog.Changelog
@@ -179,9 +183,9 @@ tasks.withType<Test> {
         includeTestsMatching("com.github.cplexopl.OplTestSuite")
     }
 
-    val summaryFile = layout.projectDirectory.file("src/test/reports/test-summary.json").asFile
     val testDetails = Collections.synchronizedList(mutableListOf<Map<String, Any>>())
     val pluginVer = providers.gradleProperty("pluginVersion").get()
+    val reportsDir = layout.projectDirectory.dir("src/test/reports").asFile
 
     addTestListener(object : TestListener {
         override fun beforeSuite(suite: TestDescriptor) {}
@@ -198,6 +202,12 @@ tasks.withType<Test> {
         }
         override fun afterSuite(suite: TestDescriptor, result: TestResult) {
             if (suite.parent == null) {
+                val nowWarsaw = LocalDateTime.now(ZoneId.of("Europe/Warsaw"))
+                val fileFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss")
+                val displayFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                val filename = "test-summary-${nowWarsaw.format(fileFormatter)}.json"
+                val summaryFile = File(reportsDir, filename)
+
                 val totalDuration = result.endTime - result.startTime
                 val currentOsBean = ManagementFactory.getOperatingSystemMXBean()
                 val testsJson = testDetails.joinToString(",\n                  ") { test ->
@@ -205,7 +215,7 @@ tasks.withType<Test> {
                 }
                 val summaryJson = """
                 {
-                  "timestamp": "${Instant.now()}",
+                  "timestamp": "${nowWarsaw.format(displayFormatter)} (Europe/Warsaw)",
                   "pluginVersion": "$pluginVer",
                   "result": "${result.resultType}",
                   "totalTests": ${result.testCount},
@@ -224,7 +234,7 @@ tasks.withType<Test> {
                 }
                 """.trimIndent()
 
-                summaryFile.parentFile.mkdirs()
+                reportsDir.mkdirs()
                 summaryFile.writeText(summaryJson)
             }
         }
