@@ -1,4 +1,7 @@
 import java.lang.management.ManagementFactory
+import java.time.Instant
+import java.util.Collections
+import org.gradle.api.tasks.testing.TestListener
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
@@ -175,6 +178,57 @@ tasks.withType<Test> {
     filter {
         includeTestsMatching("com.github.cplexopl.OplTestSuite")
     }
+
+    val summaryFile = layout.projectDirectory.file("src/test/reports/test-summary.json").asFile
+    val testDetails = Collections.synchronizedList(mutableListOf<Map<String, Any>>())
+    val pluginVer = providers.gradleProperty("pluginVersion").get()
+
+    addTestListener(object : TestListener {
+        override fun beforeSuite(suite: TestDescriptor) {}
+        override fun beforeTest(testDescriptor: TestDescriptor) {}
+        override fun afterTest(testDescriptor: TestDescriptor, result: TestResult) {
+            testDetails.add(
+                mapOf(
+                    "name" to testDescriptor.name,
+                    "className" to (testDescriptor.className ?: "Unknown"),
+                    "resultType" to result.resultType.name,
+                    "durationMs" to (result.endTime - result.startTime)
+                )
+            )
+        }
+        override fun afterSuite(suite: TestDescriptor, result: TestResult) {
+            if (suite.parent == null) {
+                val totalDuration = result.endTime - result.startTime
+                val currentOsBean = ManagementFactory.getOperatingSystemMXBean()
+                val testsJson = testDetails.joinToString(",\n                  ") { test ->
+                    """{"name": "${test["name"]}", "className": "${test["className"]}", "result": "${test["resultType"]}", "durationMs": ${test["durationMs"]}}"""
+                }
+                val summaryJson = """
+                {
+                  "timestamp": "${Instant.now()}",
+                  "pluginVersion": "$pluginVer",
+                  "result": "${result.resultType}",
+                  "totalTests": ${result.testCount},
+                  "successfulTests": ${result.successfulTestCount},
+                  "failedTests": ${result.failedTestCount},
+                  "skippedTests": ${result.skippedTestCount},
+                  "durationMs": $totalDuration,
+                  "environment": {
+                    "os": "${currentOsBean.name}",
+                    "arch": "${currentOsBean.arch}",
+                    "availableProcessors": ${currentOsBean.availableProcessors}
+                  },
+                  "tests": [
+                    $testsJson
+                  ]
+                }
+                """.trimIndent()
+
+                summaryFile.parentFile.mkdirs()
+                summaryFile.writeText(summaryJson)
+            }
+        }
+    })
 
     testLogging { showStandardStreams = true }
     systemProperty("idea.tests.overwrite.data", "true")

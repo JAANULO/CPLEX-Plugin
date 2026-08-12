@@ -11,15 +11,18 @@ bin/
 .kotlin/
 .idea/
 .intellijPlatform/
-.qodana/
+.vscode/
 
 # Generated sources
 src/main/gen/
 gen/
 
 # IDEs & Environment
-.vscode/
+*.env
+*.log
+
+# Test Reports
+src/test/reports/
 .env
 
 # Trigger verification 8 [test]
-
