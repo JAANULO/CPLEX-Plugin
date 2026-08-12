@@ -3,6 +3,7 @@ package com.github.cplexopl
 import com.github.cplexopl.console.OplInfeasibilityFilter
 import com.github.cplexopl.console.OplLinkFilter
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import org.junit.Assert.assertTrue
 import kotlin.system.measureTimeMillis
 
 class OplConsoleFilterPerformanceTest : BasePlatformTestCase() {
@@ -45,5 +46,6 @@ class OplConsoleFilterPerformanceTest : BasePlatformTestCase() {
         }
 
         println("Processed $numLines console log lines through OplLinkFilter and OplInfeasibilityFilter in $elapsed ms")
+        assertTrue("Filtrowanie 100k linii powinno trwać poniżej 5000 ms, trwało: ${elapsed}ms", elapsed < 5000)
     }
 }

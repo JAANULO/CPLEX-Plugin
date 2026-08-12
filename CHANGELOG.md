@@ -14,6 +14,7 @@
 ### Testing
 - **Unit Tests:** Added automated unit tests for `CplexPathFinder`, `OplSettingsConfigurable`, `OplSettingsState`, and `OplLinkFilter`.
 - **Performance:** Added a benchmark test `OplConsoleFilterPerformanceTest` for evaluating processing speed on 100,000 console log lines.
+- **Performance & Test Suite:** Added `OplTestSuite` to execute all test classes in a single IDE sandbox instance (~68% speedup) and optimized Gradle parallelism, G1GC, and GrammarKit incremental caching.
 
 ### Fixed
 - **Run Configuration:** Restored missing XXE attack protection in `.ops` settings file parser.

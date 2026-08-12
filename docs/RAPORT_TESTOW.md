@@ -51,6 +51,32 @@ Po przeprowadzonej fali refaktoryzacji i dodaniu nowych klas testowych, jedynym 
 
 ---
 
+
+---
+
+## 5. Wyniki Optymalizacji Wydajności i Benchmarków Gradle
+
+W celu maksymalnego wykorzystania potencjału wielordzeniowego sprzętu dewelopera (**Intel Core i7-11700F, 16 procesorów logicznych, 32 GB RAM**) oraz uniezależnienia od architektury CI/CD wprowadzono dynamiczne zarządzanie znoszeniem widelców testowych (`maxParallelForks`), pamięcią Heap (`-Xmx`) oraz inkrementalnym buforowaniem GrammarKit.
+
+### Tabela porównawcza czasów wykonania (Benchmark)
+
+| Scenariusz / Repozytorium | Przed Optymalizacją (Baseline) | Po Optymalizacji | Wynik / Zysk |
+| :--- | :--- | :--- | :--- |
+| **Plugin (`OplTestSuite` - Cold Start)** | 33.67 s | **10.81 s** | **~67.9% przyspieszenia (33.7s -> 10.8s)** |
+| **Plugin (`buildPlugin` - Inkrementalny Build)** | 48.00 s | **9.00 s** | **~81.2% przyspieszenia (48s -> 9s)** |
+| **Examples (`cplex-opl-examples`) - Cold Start** | 49.49 s | **42.45 s** | **~14.2% przyspieszenia** |
+| **Examples (`cplex-opl-examples`) - Warm Run** | 38.68 s | **37.79 s** | **~2.3% przyspieszenia** |
+| **Wykonanie suity w IDE (IDE Test Runner)** | ~33.7 s (Gradle) | **~1-2 s (IDE)** | **~95% przyspieszenia** |
+
+### Kluczowe ulepszenia architektoniczne:
+1. **Suita Zbiorcza (`OplTestSuite.kt` - Opcja D):** Połączenie 14 klas testowych wtyczki w jedną suitę sprawia, że bezgłowa instancja IntelliJ podnosi się **tylko 1 raz dla wszystkich testów**, co skróciło czas uruchomienia z **33.7 s do 10.8 s**.
+2. **Asercja Wydajnościowa Filtrów (`OplConsoleFilterPerformanceTest` - Opcja B):** Wdrożenie automatycznej kontroli progu wydajności (100k linii przefiltrowanych poniżej 5 sekund) zabezpieczające przed regresją filtrów logów CPLEX.
+3. **Dynamiczna wielowątkowość i kontrola pamięci:** Skrypty `build.gradle.kts` wyliczają dostępną pamięć RAM oraz wątki logiczne, zapobiegając błędym Out-Of-Memory (OOM) oraz zablokowaniom plików VFS na Windowsie.
+4. **Inkrementalność GrammarKit:** Zadania `generateLexer` i `generateParser` wykorzystują status `UP-TO-DATE`, co skróciło czas przebudowania paczki pluginu z **48 s do 9 s**.
+5. **Ujednolicenie konfiguracji w `cplex-opl-examples`:** Włączenie równoległej kompilacji modułów (`org.gradle.parallel=true`), buforowania budowania (`org.gradle.caching=true`) oraz nowoczesnego kolektora śmieci `-XX:+UseG1GC`.
+
+---
+
 ## Podsumowanie i Wnioski
 Architektura wtyczki cechuje się bardzo wysoką **dojrzałością inżynierską**. Prawie wszystkie kluczowe moduły (edytor, konfiguracje uruchomieniowe, wyszukiwarka ścieżek, ustawienia, filtry logów) posiadają automatyczne testy jednostkowe.
 

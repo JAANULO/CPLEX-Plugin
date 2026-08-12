@@ -1,3 +1,4 @@
+import java.lang.management.ManagementFactory
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
@@ -154,7 +155,27 @@ tasks {
 tasks.matching { it.name == "instrumentCode" || it.name == "instrumentTestCode" }.configureEach {
     enabled = false
 }
-tasks.withType<Test> { 
-    testLogging { showStandardStreams = true } 
+tasks.withType<Test> {
+    val isCi = providers.environmentVariable("CI").isPresent
+    val availableCores = Runtime.getRuntime().availableProcessors()
+    val osBean = ManagementFactory.getOperatingSystemMXBean() as? com.sun.management.OperatingSystemMXBean
+    @Suppress("DEPRECATION")
+    val totalRamBytes = osBean?.totalMemorySize ?: osBean?.totalPhysicalMemorySize ?: 0L
+    val totalRamGb = totalRamBytes / (1024 * 1024 * 1024)
+
+    if (isCi) {
+        maxParallelForks = 1
+        minHeapSize = "512m"
+        maxHeapSize = "2g"
+    } else {
+        maxParallelForks = 1
+        maxHeapSize = if (totalRamGb >= 16) "2g" else "1g"
+    }
+
+    filter {
+        includeTestsMatching("com.github.cplexopl.OplTestSuite")
+    }
+
+    testLogging { showStandardStreams = true }
     systemProperty("idea.tests.overwrite.data", "true")
 }
