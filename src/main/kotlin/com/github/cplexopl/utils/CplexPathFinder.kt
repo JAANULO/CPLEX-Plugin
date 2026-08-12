@@ -1,6 +1,5 @@
 package com.github.cplexopl.utils
 
-import com.intellij.openapi.util.SystemInfo
 import java.io.File
 
 object CplexPathFinder {
@@ -24,11 +23,15 @@ object CplexPathFinder {
         val osName = osProvider().lowercase()
         val isWindows = osName.contains("win")
         val isMac = osName.contains("mac")
-        return when {
-            isWindows -> "$envDir\\opl\\bin\\x64_win64\\oplrun.exe"
-            isMac -> "$envDir/opl/bin/x86-64_osx/oplrun"
-            else -> "$envDir/opl/bin/x86-64_linux/oplrun"
+
+        val relativeParts = when {
+            isWindows -> listOf("opl", "bin", "x64_win64", "oplrun.exe")
+            isMac -> listOf("opl", "bin", "x86-64_osx", "oplrun")
+            else -> listOf("opl", "bin", "x86-64_linux", "oplrun")
         }
+
+        val file = relativeParts.fold(File(envDir)) { parent, child -> File(parent, child) }
+        return file.absolutePath
     }
 
     /**
@@ -61,23 +64,12 @@ object CplexPathFinder {
             }
         }
 
-        val relativeBinPath: String
-        val executableName: String
-
-        when {
-            isWindows -> {
-                relativeBinPath = "opl\\bin\\x64_win64"
-                executableName = "oplrun.exe"
-            }
-            isMac -> {
-                relativeBinPath = "opl/bin/x86-64_osx"
-                executableName = "oplrun"
-            }
-            else -> {
-                relativeBinPath = "opl/bin/x86-64_linux"
-                executableName = "oplrun"
-            }
+        val relativeBinParts = when {
+            isWindows -> listOf("opl", "bin", "x64_win64")
+            isMac -> listOf("opl", "bin", "x86-64_osx")
+            else -> listOf("opl", "bin", "x86-64_linux")
         }
+        val executableName = if (isWindows) "oplrun.exe" else "oplrun"
 
         for (baseDirPath in baseDirs) {
             val baseDir = File(baseDirPath)
@@ -90,7 +82,7 @@ object CplexPathFinder {
             val sortedDirs = studioDirs.sortedByDescending { it.name }
 
             for (studioDir in sortedDirs) {
-                val oplrunFile = File(studioDir, "$relativeBinPath${File.separator}$executableName")
+                val oplrunFile = (relativeBinParts + executableName).fold(studioDir) { parent, child -> File(parent, child) }
                 if (oplrunFile.exists() && oplrunFile.canExecute()) {
                     return oplrunFile.absolutePath
                 }
