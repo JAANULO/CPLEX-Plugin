@@ -25,30 +25,35 @@ Każda główna funkcja posiada dedykowaną klasę testową w folderze `src/test
 * **Watchdog / Timeout i przekazywanie Flag CLI** | **Lokalizacja testów: Zewnętrzne repozytorium `cplex-opl-examples`** 
   Modułów interakcji z natywnym systemem operacyjnym (zabijanie procesu `oplrun` z użyciem platformowego watchdoga) nie da się wiarygodnie zmockować w teście jednostkowym. Funkcjonalność ta jest przeznaczona do weryfikacji manualnej w locie. Testowana jest z użyciem eksperymentalnych, nieskończenie liczących się modeli matematycznych pobieranych z zewnętrznego repozytorium `cplex-opl-examples`.
 
-## 3. Konsola, Logi i Debugowanie
-**Pokrycie zautomatyzowane: 90%, Weryfikacja manualna: 10%**
+* **Auto-wykrywanie instalacji CPLEX** (`CplexPathFinderTest.kt`) | **Lokalizacja testów: Wewnętrzne testy Pluginu**
+  W pełni przetestowane z użyciem tymczasowych struktur folderów (`TemporaryFolder`), sprawdzające wybór najwyższej wersji CPLEX oraz obsługę zmiennej środowiskowej `CPLEX_STUDIO_DIR` dla różnych systemów operacyjnych.
+* **Ustawienia Globalne IDE** (`OplSettingsTest.kt`) | **Lokalizacja testów: Wewnętrzne testy Pluginu**
+  Przetestowane w oparciu o `BasePlatformTestCase`. Weryfikuje cykl życia `OplSettingsConfigurable`, utrwalanie stanu `OplSettingsState` oraz działanie metody `isModified()`.
 
-* **Filtry Konsoli (Infeasibility Parser)** | **Lokalizacja testów: Wewnętrzne testy Pluginu** 
-  Funkcjonalność nowo wdrożonego analizatora konfliktów jest oflagowana silną klasą `OplConsoleFilterTest.kt`. Testy zasilane są złośliwymi formatami logów z CPLEX-a, weryfikując poprawność działania wyrażeń regularnych (Regex). Automatyzacja gwarantuje poprawne generowanie koordynatów dla linków prowadzących do plików `.mod` i `.dat`.
+## 3. Konsola, Logi i Debugowanie
+**Pokrycie zautomatyzowane: 98%, Weryfikacja manualna: 2%**
+
+* **Filtry Konsoli (Infeasibility & Link Parser)** | **Lokalizacja testów: Wewnętrzne testy Pluginu** 
+  Przeprowadzane w klasie `OplConsoleFilterTest.kt`. Testy zasilane są logami z CPLEX-a (sprawdzając zarówno podświetlanie ograniczeń sprzecznych, jak i standardowe linkowanie błędów do plików `.mod` i `.dat`).
+* **Testy Wydajnościowe Filtrów Logów** (`OplConsoleFilterPerformanceTest.kt`) | **Lokalizacja testów: Wewnętrzne testy Pluginu**
+  Przetwarza 100 000 linii logów konsolowych, chroniąc IDE przed zawieszeniem i weryfikując wydajność wyrażeń regularnych (oparte na `measureTimeMillis`).
 * **Proaktywne wskazówki (`<<< no solution`)** | **Lokalizacja testów: Zewnętrzne repozytorium `cplex-opl-examples`** 
   Elementy dynamicznie wstrzykiwane bezpośrednio do interfejsu logów IDE podczas wykonania (żółty tekst) poddawane są weryfikacji w locie. Do zmuszenia solvera do zrzucenia konkretnego błędu w warunkach polowych używany jest specjalny model testowy `infeasible-test.mod`, utrzymywany w repozytorium zewnętrznym `cplex-opl-examples`.
 
 ---
 
-## 4. Obszary bez zautomatyzowanych testów (Luki testowe)
-**Pokrycie zautomatyzowane: 0%, Weryfikacja tylko manualna (lub ryzykowna)**
+## 4. Obszary bez zautomatyzowanych testów (Pozostałe luki)
+**Pokrycie zautomatyzowane: 0%, Weryfikacja tylko manualna**
 
-Podczas głębokiej analizy projektu można zidentyfikować komponenty, które w ogóle **nie posiadają zautomatyzowanych testów jednostkowych** i mogą stanowić potencjalny dług technologiczny (technical debt):
+Po przeprowadzonej fali refaktoryzacji i dodaniu nowych klas testowych, jedynym modułem bez zautomatyzowanego testu jednostkowego pozostaje:
 
-* **Generowanie skryptów Python (`GeneratePythonRunnerAction`)**: Funkcjonalność dodana w wersji 1.4.6, która konwertuje modele na kod `doopl`. Brak klasy testowej (np. `OplActionTest.kt`), która sprawdzałaby, czy generowany kod Pythona nie ma błędów składniowych i czy akcja poprawnie zrzuca go na dysk.
-* **Auto-wykrywanie instalacji CPLEX (`CplexPathFinder`)**: Mechanizm, który pod spodem skanuje foldery `C:\Program Files\IBM...`. Nie ma dla niego testu izolowanego z wirtualnym systemem plików, więc jego ewentualna usterka wyjdzie tylko u klienta podczas klikania przycisku "Auto-Detect".
-* **Ustawienia Globalne IDE (`OplSettingsConfigurable` i `OplSettingsState`)**: Kod odpowiedzialny za panel ustawień w IDE (`Settings -> Tools -> CPLEX OPL`) oraz zapisywanie stanu (serializacja XML) nie ma przypisanych asercji. Testowany jest wyłącznie "przy okazji" manualnego uruchamiania pluginu.
-* **Podstawowy Filtr Linków Konsoli (`OplLinkFilter`)**: O ile nasz najnowszy parser *Infeasibility* posiada żelazne testy Regex, tak podstawowy, stary parser błędów (`OplLinkFilter`) w ogóle nie jest uwzględniony w `OplConsoleFilterTest.kt`.
+* **Generowanie skryptów Python (`GeneratePythonRunnerAction`)**: Funkcjonalność dodana w wersji 1.4.6, która konwertuje modele na kod `doopl`. Brak klasy testowej sprawdzającej poprawność generowanej składni kodu Python.
 
 ---
 
 ## Podsumowanie i Wnioski
-Architektura wtyczki cechuje się bardzo wysoką **dojrzałością inżynierską**. System posiada wyraźny i bardzo zdrowy podział obowiązków weryfikacyjnych:
+Architektura wtyczki cechuje się bardzo wysoką **dojrzałością inżynierską**. Prawie wszystkie kluczowe moduły (edytor, konfiguracje uruchomieniowe, wyszukiwarka ścieżek, ustawienia, filtry logów) posiadają automatyczne testy jednostkowe.
 
-1. **Testy wewnętrzne Pluginu (`src/test/kotlin/...`)**: Zabezpieczają systemy statyczne i strukturalne (język, parser, ustawienia konfiguracji, bezpieczeństwo XML, generowanie komend i filtry tekstowe Regex). Posiadają żelazne, w 100% zautomatyzowane testy jednostkowe. 
-2. **Repozytorium `cplex-opl-examples`**: Pełni precyzyjnie przemyślaną rolę zewnętrznego **poligonu doświadczalnego** do testów integracyjnych (E2E). Służy do sprawdzania stabilności interakcji ze środowiskiem (prawdziwym silnikiem solvera `oplrun`), zarządzania procesami w systemie operacyjnym (watchdog) oraz weryfikacji zachowania interfejsu (GUI IDE) pod żywym obciążeniem.
+1. **Testy wewnętrzne Pluginu (`src/test/kotlin/...`)**: Zabezpieczają systemy statyczne i strukturalne (język, parser, ustawienia konfiguracji, autodetekcję, filtry logów i testy wydajnościowe).
+2. **Repozytorium `cplex-opl-examples`**: Pełni rolę zewnętrznego **poligonu doświadczalnego** dla testów integracyjnych (E2E) z udziałem żywego silnika CPLEX `oplrun`.
+
