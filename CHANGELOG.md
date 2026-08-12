@@ -4,6 +4,21 @@
 
 ## [Unreleased]
 
+### Added
+- **Run Configuration:** Added timeout (watchdog) setting to gracefully kill the `oplrun` process if it exceeds the specified time limit.
+- **Run Configuration:** Added an input field for additional CLI arguments (e.g., `-tune`).
+- **Run Configuration:** Added a checkbox to enable the Conflict Refiner (`-conflict`).
+- **Console Filters:** Added `OplInfeasibilityFilter` to intelligently parse CPLEX infeasibility logs (`ctInfeasible at ...`) and create clickable links directly to the conflicting constraints in `.mod` and `.dat` files.
+- **Console Filters:** Added a proactive hint for `<<< no solution` output, advising users to enable the Conflict Refiner and name their constraints.
+
+### Testing
+- **Unit Tests:** Added automated unit tests for `CplexPathFinder`, `OplSettingsConfigurable`, `OplSettingsState`, and `OplLinkFilter`.
+- **Performance:** Added a benchmark test `OplConsoleFilterPerformanceTest` for evaluating processing speed on 100,000 console log lines.
+
+### Fixed
+- **Run Configuration:** Restored missing XXE attack protection in `.ops` settings file parser.
+- **Console Filters:** Added `.trim()` and VFS refresh to `OplLinkFilter` to ensure error line links resolve correctly when preceded by whitespace.
+
 ## [1.4.9] - 2026-08-04
 
 ### Added
