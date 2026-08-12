@@ -16,10 +16,62 @@ class OplAnnotator : Annotator {
         private val LOG = Logger.getInstance(OplAnnotator::class.java)
     }
 
+    private fun resolveIncludedFile(currentFile: com.intellij.psi.PsiFile, relPath: String): com.intellij.psi.PsiFile? {
+        val psiInDir = currentFile.containingDirectory?.findFile(relPath)
+        if (psiInDir != null) return psiInDir
+
+        val vFile = currentFile.originalFile.virtualFile ?: currentFile.virtualFile
+        val parentVFile = vFile?.parent
+        var targetVFile = parentVFile?.findFileByRelativePath(relPath) ?: parentVFile?.findChild(relPath)
+        if (targetVFile != null) {
+            val psi = currentFile.manager.findFile(targetVFile)
+            if (psi != null) return psi
+        }
+
+        val candidates = mutableListOf<java.io.File>()
+        if (vFile != null && vFile.path.isNotBlank()) {
+            val parentIo = java.io.File(vFile.path).parentFile
+            if (parentIo != null) candidates.add(java.io.File(parentIo, relPath))
+        }
+        val testDataDir = System.getProperty("testData.dir")
+        if (!testDataDir.isNullOrBlank()) {
+            val tdFile = java.io.File(testDataDir)
+            candidates.add(java.io.File(tdFile, relPath))
+            if (tdFile.exists()) {
+                tdFile.walkTopDown().maxDepth(3).filter { it.name == relPath }.forEach { candidates.add(it) }
+            }
+        }
+
+        for (cand in candidates) {
+            if (cand.exists()) {
+                val vf = com.intellij.openapi.vfs.LocalFileSystem.getInstance().findFileByIoFile(cand)
+                    ?: com.intellij.openapi.vfs.LocalFileSystem.getInstance().refreshAndFindFileByIoFile(cand)
+                if (vf != null) {
+                    val psi = currentFile.manager.findFile(vf)
+                    if (psi != null) return psi
+                }
+            }
+        }
+
+        return null
+    }
+
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         // PROTECTION SHIELD: If any error occurs, catch it, thanks to which IDE never again hangs on "Analyzing"
         try {
             // --- 1. Type validation (boolean in range) ---
+            if (element is OplIncludeDeclaration) {
+                val strLiteral = element.node.findChildByType(OplTypes.STRING_LITERAL)?.text?.trim('"')
+                if (strLiteral != null) {
+                    val incPsi = resolveIncludedFile(element.containingFile, strLiteral)
+                    if (incPsi == null) {
+                        holder.newAnnotation(HighlightSeverity.ERROR, "Included file '$strLiteral' not found")
+                            .range(element.textRange)
+                            .create()
+                    }
+                }
+            }
+
             if (element is OplDvarDeclaration) {
                 val isBoolean = element.node.findChildByType(OplTypes.BOOLEAN) != null
                 val hasRange = element.node.findChildByType(OplTypes.IN) != null
@@ -92,7 +144,8 @@ class OplAnnotator : Annotator {
                     "endOf", "startOf", "lengthOf", "endBeforeStart", "startBeforeEnd",
                     "startAtEnd", "endAtStart", "startAtStart", "endAtEnd",
                     "noOverlap", "size", "card", "ord", "first", "last",
-                    "item", "in", "length", "typeOf", "presenceOf", "val", "powerset"
+                    "item", "in", "length", "typeOf", "presenceOf", "val", "powerset",
+                    "alwaysEqual", "alwaysIn", "alwaysConstant", "stateFunction", "cumulFunction", "piecewise"
                 )
 
                 if (builtins.contains(name)) return
@@ -104,35 +157,51 @@ class OplAnnotator : Annotator {
                         parent is OplTupleDeclaration ||
                         parent is OplTupleField ||
                         parent is OplConstraintItem ||
+                        parent is OplPiecewiseDeclaration ||
                         (parent is OplFactor && parent.node.findChildByType(OplTypes.SUM) != null)
 
                 val file = element.containingFile ?: return
                 val declaredVariables = CachedValuesManager.getCachedValue(file) {
                     val map = mutableMapOf<String, MutableList<PsiElement>>()
-                    fun registerDeclaration(declarationNode: PsiElement) {
-                        val idNodes = declarationNode.node.getChildren(null).filter { it.elementType == OplTypes.ID }
-                        val idNode = if (declarationNode is OplDvarDeclaration || declarationNode is OplTupleDeclaration || declarationNode is OplConstraintItem) {
-                            idNodes.firstOrNull()
-                        } else {
-                            idNodes.lastOrNull() // For var/dexpr, the last direct ID is the variable name (skipping typeRef)
+                    fun collectDeclarations(currentFile: com.intellij.psi.PsiFile, visited: MutableSet<com.intellij.psi.PsiFile>) {
+                        if (!visited.add(currentFile)) return
+
+                        fun registerDeclaration(declarationNode: PsiElement) {
+                            val idNodes = declarationNode.node.getChildren(null).filter { it.elementType == OplTypes.ID }
+                            val idNode = if (declarationNode is OplDvarDeclaration || declarationNode is OplTupleDeclaration || declarationNode is OplConstraintItem || declarationNode is OplPiecewiseDeclaration) {
+                                idNodes.firstOrNull()
+                            } else {
+                                idNodes.lastOrNull()
+                            }
+                            if (idNode != null) {
+                                map.computeIfAbsent(idNode.text) { mutableListOf() }.add(declarationNode)
+                            }
                         }
-                        if (idNode != null) {
-                            map.computeIfAbsent(idNode.text) { mutableListOf() }.add(declarationNode)
+
+                        PsiTreeUtil.findChildrenOfType(currentFile, OplVarDeclaration::class.java).forEach { registerDeclaration(it) }
+                        PsiTreeUtil.findChildrenOfType(currentFile, OplDvarDeclaration::class.java).forEach { registerDeclaration(it) }
+                        PsiTreeUtil.findChildrenOfType(currentFile, OplDexprDeclaration::class.java).forEach { registerDeclaration(it) }
+                        PsiTreeUtil.findChildrenOfType(currentFile, OplTupleDeclaration::class.java).forEach { registerDeclaration(it) }
+                        PsiTreeUtil.findChildrenOfType(currentFile, OplPiecewiseDeclaration::class.java).forEach { registerDeclaration(it) }
+
+                        PsiTreeUtil.findChildrenOfType(currentFile, OplConstraintItem::class.java).forEach {
+                            if (it.node.findChildByType(OplTypes.COLON) != null) {
+                                registerDeclaration(it)
+                            }
+                        }
+
+                        PsiTreeUtil.findChildrenOfType(currentFile, OplIncludeDeclaration::class.java).forEach { inc ->
+                            val relPath = inc.node.findChildByType(OplTypes.STRING_LITERAL)?.text?.trim('"')
+                            if (relPath != null) {
+                                val incPsi = resolveIncludedFile(currentFile, relPath)
+                                if (incPsi != null) {
+                                    collectDeclarations(incPsi, visited)
+                                }
+                            }
                         }
                     }
 
-                    PsiTreeUtil.findChildrenOfType(file, OplVarDeclaration::class.java).forEach { registerDeclaration(it) }
-                    PsiTreeUtil.findChildrenOfType(file, OplDvarDeclaration::class.java).forEach { registerDeclaration(it) }
-                    PsiTreeUtil.findChildrenOfType(file, OplDexprDeclaration::class.java).forEach { registerDeclaration(it) }
-                    PsiTreeUtil.findChildrenOfType(file, OplTupleDeclaration::class.java).forEach { registerDeclaration(it) }
-
-                    // Register as global ONLY constraint labels (those with colon, e.g. CapacityConstraint:)
-                    // Loops forall have their own iterators, which MUST NOT be added to global pool.
-                    PsiTreeUtil.findChildrenOfType(file, OplConstraintItem::class.java).forEach {
-                        if (it.node.findChildByType(OplTypes.COLON) != null) {
-                            registerDeclaration(it)
-                        }
-                    }
+                    collectDeclarations(file, mutableSetOf())
                     CachedValueProvider.Result.create(map, PsiModificationTracker.MODIFICATION_COUNT)
                 }
 
@@ -174,7 +243,9 @@ class OplAnnotator : Annotator {
                             OplConstraintItem::class.java, 
                             OplDvarDeclaration::class.java, 
                             OplDexprDeclaration::class.java, 
-                            OplVarDeclaration::class.java
+                            OplVarDeclaration::class.java,
+                            OplAssertDeclaration::class.java,
+                            OplAssertItem::class.java
                         )
                         
                         for (node in scopeNodes) {

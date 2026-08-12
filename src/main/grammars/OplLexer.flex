@@ -80,6 +80,7 @@ BLOCK_COMMENT   = "/*"([^*]|\*[^/])*"*/"
 "allDifferent"          { return OplTypes.ALLDIFFERENT; }
 "pack"                  { return OplTypes.PACK; }
 "size"                  { return OplTypes.SIZE; }
+"piecewise"             { return OplTypes.PIECEWISE; }
 
 // Literals
 {STRING}                { return OplTypes.STRING_LITERAL; }
@@ -94,6 +95,7 @@ BLOCK_COMMENT   = "/*"([^*]|\*[^/])*"*/"
 ".."                    { return OplTypes.DOTDOT; }
 "=="                    { return OplTypes.EQEQ; }
 "=>"                    { return OplTypes.IMPLIES; }
+"->"                    { return OplTypes.ARROW; }
 "<="                    { return OplTypes.LE; }
 ">="                    { return OplTypes.GE; }
 "!="                    { return OplTypes.NEQ; }
@@ -103,6 +105,7 @@ BLOCK_COMMENT   = "/*"([^*]|\*[^/])*"*/"
 "%"                     { return OplTypes.MOD; }
 
 // Single-character operators
+"|"                     { return OplTypes.PIPE; }
 "?"                     { return OplTypes.QUESTION; }
 ";"                     { return OplTypes.SEMICOLON; }
 ":"                     { return OplTypes.COLON; }

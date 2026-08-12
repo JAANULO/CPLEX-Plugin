@@ -82,6 +82,10 @@
     LPAREN      = '('
     RPAREN      = ')'
 
+    PIECEWISE   = 'piecewise'
+    PIPE        = '|'
+    ARROW       = '->'
+
     // Token types with regular expressions (regex)
     // Regex is a pattern describing text format, e.g. [0-9]+ = one or more digits
     LINE_COMMENT  = 'regexp://[^\r\n]*'
@@ -98,7 +102,8 @@ oplFile ::= item_*
 private item_ ::= declaration | SEMICOLON
 
 // Declaration can be of various types
-declaration ::= varDeclaration
+declaration ::= piecewiseDeclaration
+              | varDeclaration
               | dvarDeclaration
               | dexprDeclaration
               | objectiveDeclaration
@@ -114,7 +119,16 @@ private baseType ::= (INT | FLOAT) PLUS? | INT_PLUS | FLOAT_PLUS | BOOLEAN | STR
 private typeRef ::= baseType | ID | LBRACE (baseType | ID) RBRACE
 
 // Top-level assert declaration
-assertDeclaration ::= ASSERT expression SEMICOLON { pin=1 recoverWhile=statement_recover }
+assertItem ::= (FORALL LPAREN oplIterator (COMMA oplIterator)* RPAREN)? expression SEMICOLON
+assertDeclaration ::= ASSERT (LBRACE assertItem* RBRACE SEMICOLON? | expression SEMICOLON) { pin=1 recoverWhile=statement_recover }
+
+// Piecewise linear function declaration
+piecewiseDeclaration ::= PIECEWISE LBRACE (expression (ARROW | IMPLIES) expression SEMICOLON)* expression RBRACE ID SEMICOLON {
+  pin=1
+  recoverWhile=statement_recover
+  implements="com.github.cplexopl.psi.OplNamedElement"
+  mixin="com.github.cplexopl.psi.OplNamedElementImpl"
+}
 
 // Data variable declaration (supports arrays, ellipses, and ranges)
 varDeclaration ::= typeRef ID (LBRACKET expression RBRACKET)* (EQ (ELLIPSIS | expression))? SEMICOLON { 
@@ -155,15 +169,18 @@ oplIterator ::= ID (COMMA ID)* IN expression (COLON expression)?
 // Conflict guard: optional label (private to avoid breaking Annotator)
 private label ::= ID COLON
 
+private constraintBlock ::= LBRACE constraintItem* RBRACE SEMICOLON? | constraintItem
+
 constraintItem ::= label? expression SEMICOLON
                  | label? FORALL LPAREN oplIterator (COMMA oplIterator)* RPAREN LBRACE constraintItem* RBRACE
                  | label? FORALL LPAREN oplIterator (COMMA oplIterator)* RPAREN constraintItem
+                 | label? IF LPAREN expression RPAREN constraintBlock (ELSE constraintBlock)?
 
 // Execute block - IBM Script code (JavaScript-like)
 executeBlock ::= (EXECUTE | MAIN) ID? executeBody { pin=1 recoverWhile=statement_recover }
 executeBody ::= LBRACE executeItem* RBRACE
 private executeItem ::= executeBody | executeToken
-private executeToken ::= ID | INTEGER_LITERAL | FLOAT_LITERAL | STRING_LITERAL | LPAREN | RPAREN | LBRACKET | RBRACKET | PLUS | MINUS | STAR | SLASH | EQ | EQEQ | NEQ | LT | LE | GT | GE | SEMICOLON | COMMA | DOT | DOTDOT | ELLIPSIS | COLON | QUESTION | INT | FLOAT | BOOLEAN | STRING | RANGE | DVAR | DEXPR | TUPLE | KEY | MINIMIZE | MAXIMIZE | SUBJECT | TO | INCLUDE | EXECUTE | MAIN | FORALL | EXISTS | IN | IF | ELSE | THEN | USING | CP | INTERVAL | SEQUENCE | WITH | ASSERT | SUM | ALL | PULSE | STEP | ALLDIFFERENT | PACK | SIZE | ANDAND | OROR | NOT | MOD | IMPLIES
+private executeToken ::= ID | INTEGER_LITERAL | FLOAT_LITERAL | STRING_LITERAL | LPAREN | RPAREN | LBRACKET | RBRACKET | PLUS | MINUS | STAR | SLASH | EQ | EQEQ | NEQ | LT | LE | GT | GE | SEMICOLON | COMMA | DOT | DOTDOT | ELLIPSIS | COLON | QUESTION | INT | FLOAT | BOOLEAN | STRING | RANGE | DVAR | DEXPR | TUPLE | KEY | MINIMIZE | MAXIMIZE | SUBJECT | TO | INCLUDE | EXECUTE | MAIN | FORALL | EXISTS | IN | IF | ELSE | THEN | USING | CP | INTERVAL | SEQUENCE | WITH | ASSERT | SUM | ALL | PULSE | STEP | ALLDIFFERENT | PACK | SIZE | ANDAND | OROR | NOT | MOD | IMPLIES | PIECEWISE | PIPE | ARROW
 
 // Tuple declaration (struct-like type)
 tupleDeclaration ::= TUPLE ID LBRACE tupleField* RBRACE SEMICOLON? { 
@@ -197,6 +214,10 @@ factor ::= (PLUS | MINUS) factor
          | STRING_LITERAL
          | LBRACKET (expression (COMMA expression)*)? RBRACKET
          | LPAREN expression RPAREN
+         | LT expression (COMMA expression)* GT
+         | LBRACE (expression PIPE oplIterator (COMMA oplIterator)* | (expression (COMMA expression)*)?) RBRACE
+         | LBRACE RBRACE
+         | PIECEWISE LBRACE (expression (ARROW | IMPLIES) expression SEMICOLON)* expression RBRACE
 
 // Recovery rule: "Skip everything until a new declaration start or semicolon"
-private statement_recover ::= !(INT | FLOAT | BOOLEAN | INTERVAL | SEQUENCE | STRING | RANGE | DVAR | DEXPR | TUPLE | MINIMIZE | MAXIMIZE | SUBJECT | INCLUDE | EXECUTE | MAIN | USING | LBRACE | ID | SEMICOLON | RBRACE | ASSERT)
+private statement_recover ::= !(INT | FLOAT | BOOLEAN | INTERVAL | SEQUENCE | STRING | RANGE | DVAR | DEXPR | TUPLE | MINIMIZE | MAXIMIZE | SUBJECT | INCLUDE | EXECUTE | MAIN | USING | LBRACE | ID | SEMICOLON | RBRACE | ASSERT | PIECEWISE)
