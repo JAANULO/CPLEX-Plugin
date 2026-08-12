@@ -7,10 +7,16 @@ import com.intellij.execution.process.ProcessHandlerFactory
 import com.intellij.execution.process.ProcessTerminatedListener
 import com.intellij.execution.process.ProcessListener
 import com.intellij.execution.process.ProcessEvent
+import com.intellij.execution.process.ProcessOutputTypes
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Key
+import com.intellij.util.concurrency.AppExecutorUtil
+import com.intellij.util.execution.ParametersListUtil
 import java.io.File
 import java.util.UUID
+import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.TimeUnit
 import javax.xml.parsers.DocumentBuilderFactory
 import com.github.cplexopl.settings.OplSettingsState
 
@@ -37,17 +43,26 @@ class OplRunConfiguration(
         get() = options.settingsFile ?: ""
         set(value) { options.settingsFile = value }
 
+    var timeoutSeconds: Int
+        get() = options.timeoutSeconds
+        set(value) { options.timeoutSeconds = value }
+
+    var additionalArgs: String?
+        get() = options.additionalArgs
+        set(value) { options.additionalArgs = value }
+
+    var runConflictRefiner: Boolean
+        get() = options.runConflictRefiner
+        set(value) { options.runConflictRefiner = value }
+
     var cplexPath: String
         get() {
-            // 1. Priority: Path overridden manually in "Edit Configurations" window for this specific run
             val localPath = options.cplexPath
             if (!localPath.isNullOrEmpty()) return localPath
 
-            // 2. Main path: From global IDE settings (Settings -> Tools -> CPLEX OPL)
             val globalPath = OplSettingsState.instance.savedCplexPath
             if (globalPath.isNotEmpty()) return globalPath
 
-            // 3. Fallback: If user hasn't set anything, try to guess
             return com.github.cplexopl.utils.CplexPathFinder.find() ?: ""
         }
         set(value) { options.cplexPath = value }
@@ -74,6 +89,16 @@ class OplRunConfiguration(
     fun createCommandLine(tempModelFile: File): GeneralCommandLine {
         return GeneralCommandLine().apply {
             exePath = cplexPath
+            
+            val args = options.additionalArgs
+            if (!args.isNullOrBlank()) {
+                addParameters(ParametersListUtil.parse(args))
+            }
+            
+            if (options.runConflictRefiner) {
+                addParameter("-conflict")
+            }
+
             addParameter(tempModelFile.absolutePath)
             if (dataFile.isNotEmpty()) {
                 addParameter(dataFile)
@@ -96,6 +121,11 @@ class OplRunConfiguration(
 
             return try {
                 val factory = DocumentBuilderFactory.newInstance()
+                factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
+                factory.setFeature("http://xml.org/sax/features/external-general-entities", false)
+                factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false)
+                factory.isXIncludeAware = false
+                factory.isExpandEntityReferences = false
                 val builder = factory.newDocumentBuilder()
                 val doc = builder.parse(settingsFile)
                 
@@ -119,8 +149,8 @@ class OplRunConfiguration(
                     val escapedValue = decodedValue
                         .replace("\\", "\\\\")
                         .replace("\"", "\\\"")
-                    val formattedValue = if (isNumericOrBoolean) escapedValue else "\"$escapedValue\""
-                    result.appendLine("  cplex.$name = $formattedValue;")
+                    val formattedValue = if (isNumericOrBoolean) escapedValue else "\"${escapedValue}\""
+                    result.appendLine("  cplex.${name} = ${formattedValue};")
                 }
                 result.appendLine("}")
                 result.append("\n")
@@ -142,7 +172,6 @@ class OplRunConfiguration(
     }
 }
 
-// RunProfileState = class executing actual process (runs oplrun as subprocess)
 class OplRunState(
     environment: ExecutionEnvironment,
     private val config: OplRunConfiguration
@@ -176,8 +205,31 @@ class OplRunState(
             val handler = ProcessHandlerFactory.getInstance()
                 .createColoredProcessHandler(commandLine)
 
+            val timeout = config.timeoutSeconds
+            var watchdogTask: ScheduledFuture<*>? = null
+
+            if (timeout > 0) {
+                watchdogTask = AppExecutorUtil.getAppScheduledExecutorService().schedule({
+                    if (!handler.isProcessTerminated) {
+                        handler.notifyTextAvailable("\nProcess killed due to timeout (${timeout}s)\n", ProcessOutputTypes.STDERR)
+                        handler.destroyProcess()
+                    }
+                }, timeout.toLong(), TimeUnit.SECONDS)
+            }
+
             handler.addProcessListener(object : ProcessListener {
+                override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
+                    val text = event.text
+                    if (text.contains("<<< no solution") && !config.runConflictRefiner) {
+                        handler.notifyTextAvailable(
+                            "\n[Wskazówka: aby zdiagnozować sprzeczność, włącz 'Run conflict refiner' w ustawieniach i nadaj nazwy ograniczeniom]\n",
+                            ProcessOutputTypes.STDERR
+                        )
+                    }
+                }
+                
                 override fun processTerminated(event: ProcessEvent) {
+                    watchdogTask?.cancel(false)
                     if (tempModelFile.exists()) {
                         try {
                             tempModelFile.delete()

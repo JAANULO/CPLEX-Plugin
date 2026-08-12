@@ -41,9 +41,17 @@ class OplRunConfigurationOptions : RunConfigurationOptions() {
     private val _dataFile = string("").provideDelegate(this, ::dataFile)
     private val _settingsFile = string("").provideDelegate(this, ::settingsFile)
     private val _cplexPath = string("").provideDelegate(this, ::cplexPath)
+    
+    // Nowe opcje dla watchdoga i tuningu
+    private val _timeoutSeconds = property(0).provideDelegate(this, ::timeoutSeconds)
+    private val _additionalArgs = string("").provideDelegate(this, ::additionalArgs)
+    private val _runConflictRefiner = property(false).provideDelegate(this, ::runConflictRefiner)
 
     var modelFile: String? by _modelFile
     var dataFile: String? by _dataFile
     var settingsFile: String? by _settingsFile
     var cplexPath: String? by _cplexPath
+    var timeoutSeconds: Int by _timeoutSeconds
+    var additionalArgs: String? by _additionalArgs
+    var runConflictRefiner: Boolean by _runConflictRefiner
 }

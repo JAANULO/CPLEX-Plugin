@@ -9,6 +9,8 @@ import com.intellij.util.ui.FormBuilder
 import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JPanel
+import javax.swing.JTextField
+import javax.swing.JCheckBox
 import java.awt.BorderLayout
 import com.github.cplexopl.utils.CplexPathFinder
 import com.github.cplexopl.settings.OplSettingsState
@@ -77,12 +79,24 @@ class OplRunConfigurationEditor(private val project: Project) : SettingsEditor<O
         add(autoDetectButton, BorderLayout.EAST)
     }
 
+    // New fields
+    private val timeoutField = JTextField().apply {
+        toolTipText = "Time limit in seconds. 0 means no limit."
+    }
+    private val additionalArgsField = JTextField().apply {
+        toolTipText = "Additional arguments to pass to oplrun, e.g. -tune"
+    }
+    private val runConflictRefinerCheckbox = JCheckBox("Run conflict refiner on infeasible models")
+
     // Build form panel
     private val panel: JPanel = FormBuilder.createFormBuilder()
         .addLabeledComponent("Model file (.mod):", modelFileField)
         .addLabeledComponent("Data file (.dat):", dataFileField)
         .addLabeledComponent("Settings file (.ops):", settingsFileField)
         .addLabeledComponent("Oplrun path:", pathPanel)
+        .addLabeledComponent("Additional CLI args:", additionalArgsField)
+        .addLabeledComponent("Timeout (seconds):", timeoutField)
+        .addComponent(runConflictRefinerCheckbox)
         .addComponentFillVertically(JPanel(), 0)
         .panel
 
@@ -128,6 +142,10 @@ class OplRunConfigurationEditor(private val project: Project) : SettingsEditor<O
         } else {
             cplexPathField.text = config.cplexPath
         }
+
+        timeoutField.text = config.timeoutSeconds.toString()
+        additionalArgsField.text = config.additionalArgs ?: ""
+        runConflictRefinerCheckbox.isSelected = config.runConflictRefiner
     }
 
     override fun applyEditorTo(config: OplRunConfiguration) {
@@ -136,6 +154,10 @@ class OplRunConfigurationEditor(private val project: Project) : SettingsEditor<O
         config.dataFile = dataFileField.text
         config.settingsFile = settingsFileField.text
         config.cplexPath = cplexPathField.text
+        
+        config.timeoutSeconds = timeoutField.text.toIntOrNull() ?: 0
+        config.additionalArgs = additionalArgsField.text
+        config.runConflictRefiner = runConflictRefinerCheckbox.isSelected
 
         // On confirmation of "Apply" form, also update global path
         if (cplexPathField.text.isNotEmpty()) {
