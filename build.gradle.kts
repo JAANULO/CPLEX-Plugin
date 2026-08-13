@@ -111,6 +111,7 @@ intellijPlatform {
 }
 
 changelog {
+    path = file("docs/CHANGELOG.md").path
     groups.empty()
     repositoryUrl = providers.gradleProperty("pluginRepositoryUrl")
     versionPrefix = ""
