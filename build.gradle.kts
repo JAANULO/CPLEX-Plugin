@@ -115,6 +115,7 @@ changelog {
     groups.empty()
     repositoryUrl = providers.gradleProperty("pluginRepositoryUrl")
     versionPrefix = ""
+    headerParserRegex = """\d+\.\d+\.\d+(\.\d+)?""".toRegex()
 }
 
 kover {
