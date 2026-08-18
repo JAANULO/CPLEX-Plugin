@@ -35,14 +35,27 @@ class OplRunConfigurationProducer : LazyRunConfigurationProducer<OplRunConfigura
         configuration.modelFile = file.path
         configuration.name = file.nameWithoutExtension
 
-        // Try to automatically find .dat file with the same name
-        val dataFile = file.parent?.findChild("${file.nameWithoutExtension}.dat")
+        // Try to automatically find .dat file
+        // 1. Same name as model (.dat)
+        // 2. data.dat
+        // 3. If there is only one .dat file in the directory
+        val parent = file.parent
+        val dataFile = parent?.findChild("${file.nameWithoutExtension}.dat")
+            ?: parent?.findChild("data.dat")
+            ?: parent?.children?.filter { it.extension == "dat" }?.singleOrNull()
+
         if (dataFile != null) {
             configuration.dataFile = dataFile.path
         }
 
-        // Try to automatically find .ops file with the same name
-        val settingsFile = file.parent?.findChild("${file.nameWithoutExtension}.ops")
+        // Try to automatically find .ops file
+        // 1. Same name as model (.ops)
+        // 2. settings.ops
+        // 3. If there is only one .ops file in the directory
+        val settingsFile = parent?.findChild("${file.nameWithoutExtension}.ops")
+            ?: parent?.findChild("settings.ops")
+            ?: parent?.children?.filter { it.extension == "ops" }?.singleOrNull()
+
         if (settingsFile != null) {
             configuration.settingsFile = settingsFile.path
         }

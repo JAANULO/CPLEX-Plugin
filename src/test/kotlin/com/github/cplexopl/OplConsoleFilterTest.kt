@@ -36,6 +36,14 @@ class OplConsoleFilterTest : BasePlatformTestCase() {
         Assert.assertNotNull("Filter should match .dat files", result)
     }
 
+    fun testInfeasibilityFilterMatchesTempFilePath() {
+        val filter = OplInfeasibilityFilter(project)
+        val line = "ct1 at 4:8-16 C:\\Users\\atona\\AppData\\Local\\Temp\\_temp_242972bd-5b07-4fbf-b663-1084e80f9198_infeasible-test.mod"
+        
+        val result = filter.applyFilter(line, line.length)
+        Assert.assertNotNull("Filter should match conflict line even with temp file path", result)
+    }
+
     fun testInfeasibilityFilterIgnoresIrrelevantOutput() {
         val filter = OplInfeasibilityFilter(project)
         val line = "Version identifier: 22.1.2.0 | 2024-11-25 | 0edbb82fd"

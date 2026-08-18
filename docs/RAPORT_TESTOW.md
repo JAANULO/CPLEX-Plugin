@@ -33,10 +33,12 @@ Każda główna funkcja posiada dedykowaną klasę testową w folderze `src/test
 ## 3. Konsola, Logi i Debugowanie
 **Pokrycie zautomatyzowane: 98%, Weryfikacja manualna: 2%**
 
-* **Filtry Konsoli (Infeasibility & Link Parser)** | **Lokalizacja testów: Wewnętrzne testy Pluginu** 
-  Przeprowadzane w klasie `OplConsoleFilterTest.kt`. Testy zasilane są logami z CPLEX-a (sprawdzając zarówno podświetlanie ograniczeń sprzecznych, jak i standardowe linkowanie błędów do plików `.mod` i `.dat`).
+* **Filtry Konsoli i Rozwiązywanie Ścieżek (Infeasibility, Link Parser & OplFileResolver)** | **Lokalizacja testów: Wewnętrzne testy Pluginu** 
+  Przeprowadzane w klasie `OplConsoleFilterTest.kt`. Sprawdzają poprawne mapowanie ścieżek plików tymczasowych (`_temp_...`) do workspace, podświetlanie ograniczeń sprzecznych oraz linkowanie błędów w `.mod` i `.dat`.
+* **Automatyczne Raportowanie Błędów (`OplErrorReportSubmitterTest.kt`)** | **Lokalizacja testów: Wewnętrzne testy Pluginu**
+  Weryfikuje poprawność działania integrowania wyjątków pluginu z formularzem zgłoszeń na GitHubie.
 * **Testy Wydajnościowe Filtrów Logów** (`OplConsoleFilterPerformanceTest.kt`) | **Lokalizacja testów: Wewnętrzne testy Pluginu**
-  Przetwarza 100 000 linii logów konsolowych, chroniąc IDE przed zawieszeniem i weryfikując wydajność wyrażeń regularnych (oparte na `measureTimeMillis`).
+  Przetwarza 100 000 linii logów konsolowych z użyciem pamięci podręcznej `OplFileResolver`, chroniąc IDE przed zawieszeniem i weryfikując wydajność wyrażeń regularnych (oparte na `measureTimeMillis`).
 * **Proaktywne wskazówki (`<<< no solution`)** | **Lokalizacja testów: Zewnętrzne repozytorium `cplex-opl-examples`** 
   Elementy dynamicznie wstrzykiwane bezpośrednio do interfejsu logów IDE podczas wykonania (żółty tekst) poddawane są weryfikacji w locie. Do zmuszenia solvera do zrzucenia konkretnego błędu w warunkach polowych używany jest specjalny model testowy `infeasible-test.mod`, utrzymywany w repozytorium zewnętrznym `cplex-opl-examples`.
 

@@ -147,6 +147,18 @@ class OplRunConfigurationTest : BasePlatformTestCase() {
         }
     }
 
+    fun testProducerDataFileFallback() {
+        val psiFile = myFixture.configureByText("model.mod", "dvar int x;")
+        myFixture.addFileToProject("data.dat", "x = 1;")
+        
+        val context = com.intellij.execution.actions.ConfigurationContext(psiFile)
+        val producer = com.github.cplexopl.run.OplRunConfigurationProducer()
+        val configuration = producer.createConfigurationFromContext(context)?.configuration as? OplRunConfiguration
+        
+        assertNotNull("Configuration powinna zostać utworzona", configuration)
+        assertTrue("dataFile powinien zostać automatycznie zmapowany na data.dat", configuration?.dataFile?.endsWith("data.dat") == true)
+    }
+
     private fun createTempDir(prefix: String): File {
         val tempDir = File.createTempFile(prefix, "")
         tempDir.delete()

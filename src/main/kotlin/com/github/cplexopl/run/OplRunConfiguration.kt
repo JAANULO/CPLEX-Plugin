@@ -222,7 +222,7 @@ class OplRunState(
                     val text = event.text
                     if (text.contains("<<< no solution") && !config.runConflictRefiner) {
                         handler.notifyTextAvailable(
-                            "\n[Wskazówka: aby zdiagnozować sprzeczność, włącz 'Run conflict refiner' w ustawieniach i nadaj nazwy ograniczeniom]\n",
+                            "\n[Hint: To diagnose infeasibility, enable 'Run conflict refiner' in Run Configuration settings and label your constraints]\n",
                             ProcessOutputTypes.STDERR
                         )
                     }
@@ -235,6 +235,14 @@ class OplRunState(
                             tempModelFile.delete()
                         } catch (e: Exception) {
                             // Ignore errors when removing temporary file
+                        }
+                    }
+
+                    if (event.exitCode == 0) {
+                        val settings = OplSettingsState.instance
+                        settings.successfulRunCount++
+                        if (settings.successfulRunCount == 5 && !settings.neverShowRatePrompt) {
+                            com.github.cplexopl.actions.OplRatePrompt.showNotification(config.project)
                         }
                     }
                 }

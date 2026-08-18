@@ -16,12 +16,7 @@ class OplLinkFilter(private val project: Project) : Filter {
             val filePath = matcher.group("path").trim()
             val lineNumber = matcher.group("line").toInt() - 1 // IntelliJ counts from 0
 
-            val normalizedPath = filePath.replace('\\', '/')
-            val virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByPath(normalizedPath)
-                ?: project.basePath?.let { basePath ->
-                    val fullPath = "$basePath/$normalizedPath".replace('\\', '/')
-                    LocalFileSystem.getInstance().refreshAndFindFileByPath(fullPath)
-                }
+            val virtualFile = OplFileResolver.resolve(project, filePath)
 
             if (virtualFile != null) {
                 val info = OpenFileHyperlinkInfo(project, virtualFile, lineNumber)

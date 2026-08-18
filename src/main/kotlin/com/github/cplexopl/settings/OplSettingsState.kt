@@ -15,11 +15,15 @@ class OplSettingsState : PersistentStateComponent<OplSettingsState> {
 
     // Variable storing path to oplrun.exe on user's disk
     var savedCplexPath: String = ""
+    var successfulRunCount: Int = 0
+    var neverShowRatePrompt: Boolean = false
 
     override fun getState(): OplSettingsState = this
 
     override fun loadState(state: OplSettingsState) {
         this.savedCplexPath = state.savedCplexPath
+        this.successfulRunCount = state.successfulRunCount
+        this.neverShowRatePrompt = state.neverShowRatePrompt
     }
 
     companion object {

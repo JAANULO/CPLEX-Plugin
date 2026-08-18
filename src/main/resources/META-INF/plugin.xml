@@ -39,6 +39,8 @@
                            displayType="BALLOON"
                            isLogByDefault="true"/>
 
+        <errorHandler implementation="com.github.cplexopl.error.OplErrorReportSubmitter"/>
+
         <psi.referenceContributor language="OPL" implementation="com.github.cplexopl.reference.OplReferenceContributor"/>
         <consoleFilterProvider implementation="com.github.cplexopl.console.OplConsoleFilterProvider"/>
         <lang.commenter language="OPL" implementationClass="com.github.cplexopl.features.OplCommenter"/>
@@ -128,6 +130,13 @@
                 description="Generate a Python doopl runner script for this OPL model">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
             <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
+
+        <action id="OPL.RatePlugin"
+                class="com.github.cplexopl.actions.OplRateAction"
+                text="Rate CPLEX OPL Plugin..."
+                description="Open GitHub / Marketplace page to rate or star this plugin">
+            <add-to-group group-id="HelpMenu" anchor="last"/>
         </action>
     </actions>
 </idea-plugin>

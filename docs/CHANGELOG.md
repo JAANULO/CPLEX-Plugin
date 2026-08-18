@@ -4,6 +4,22 @@
 
 ## [Unreleased]
 
+## [1.4.9.2] - 2026-08-19
+
+### Added
+- **Run Configuration:** Enhanced auto-pairing in `OplRunConfigurationProducer` to automatically detect `data.dat` and fallback to single `.dat` or `.ops` files in the model folder.
+- **Console Filters:** Added `OplFileResolver` with ConcurrentHashMap caching to map temporary execution files (`_temp_...`) back to project workspace files.
+- **Error Reporting:** Added `OplErrorReportSubmitter` integration to allow users to report unhandled plugin exceptions directly as pre-filled GitHub Issues.
+- **Rating:** Added `OplRateAction` (`Help -> Rate CPLEX OPL Plugin...`) and `OplRatePrompt` notification balloon after 5 successful runs linking to JetBrains Marketplace.
+
+### Testing
+- **Unit Tests:** Added automated unit tests for `OplErrorReportSubmitterTest` and expanded `OplRunConfigurationTest` and `OplConsoleFilterTest`.
+
+### Fixed
+- **Localization:** Translated all remaining Polish console hint and UI strings to English.
+
+## [1.4.9.1] - 2026-08-14
+
 ### Added
 - **Run Configuration:** Added timeout (watchdog) setting to gracefully kill the `oplrun` process if it exceeds the specified time limit.
 - **Run Configuration:** Added an input field for additional CLI arguments (e.g., `-tune`).
