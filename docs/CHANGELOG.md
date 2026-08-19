@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+### Added
+- **Settings:** Added manual "Auto-detect" button in plugin settings for on-demand solver path discovery.
+
+### Fixed
+- **Rating Links:** Updated JetBrains Marketplace review URLs in `OplRateAction` and `OplRatePrompt` to point directly to the plugin reviews page.
+
 ## [1.4.9.2] - 2026-08-19
 
 ### Added
