@@ -12,25 +12,45 @@ class OplReference(
 ) : PsiReferenceBase<PsiElement>(element, textRange) {
 
     override fun resolve(): PsiElement? {
-        // ALWAYS use the active view from the editor, ignoring files on disk
         val file = element.containingFile ?: return null
         val targetName = variableName.trim()
 
-        // Helper function: extracts just the letter from the declaration block
         fun extractTargetToken(node: PsiElement): PsiElement? {
             val ids = node.node.getChildren(null).filter { it.elementType == OplTypes.ID }
             return ids.firstOrNull { it.text == targetName }?.psi
         }
 
-        // We scan through all types in order
+        // 1. Hierarchical scope search: check enclosing iterators (forall, sum, etc.) in parent PSI tree
+        var currentNode: PsiElement? = element.parent
+        while (currentNode != null && currentNode !is PsiFile) {
+            val iterators = PsiTreeUtil.findChildrenOfType(currentNode, OplOplIterator::class.java)
+            for (iter in iterators) {
+                val inNode = iter.node.findChildByType(OplTypes.IN)
+                val iterIds = iter.node.getChildren(null)
+                    .filter { it.elementType == OplTypes.ID && (inNode == null || it.startOffset < inNode.startOffset) }
+                val match = iterIds.firstOrNull { it.text == targetName }
+                if (match != null) {
+                    return match.psi
+                }
+            }
+            currentNode = currentNode.parent
+        }
+
+        // 2. Global declarations search
         val dvars = PsiTreeUtil.findChildrenOfType(file, OplDvarDeclaration::class.java)
         for (dvar in dvars) { extractTargetToken(dvar)?.let { return it } }
 
         val vars = PsiTreeUtil.findChildrenOfType(file, OplVarDeclaration::class.java)
         for (v in vars) { extractTargetToken(v)?.let { return it } }
 
+        val dexprs = PsiTreeUtil.findChildrenOfType(file, OplDexprDeclaration::class.java)
+        for (dexpr in dexprs) { extractTargetToken(dexpr)?.let { return it } }
+
         val tuples = PsiTreeUtil.findChildrenOfType(file, OplTupleDeclaration::class.java)
         for (t in tuples) { extractTargetToken(t)?.let { return it } }
+
+        val piecewises = PsiTreeUtil.findChildrenOfType(file, OplPiecewiseDeclaration::class.java)
+        for (p in piecewises) { extractTargetToken(p)?.let { return it } }
 
         val constraints = PsiTreeUtil.findChildrenOfType(file, OplConstraintItem::class.java)
         for (c in constraints) { extractTargetToken(c)?.let { return it } }
