@@ -44,12 +44,12 @@ Każda główna funkcja posiada dedykowaną klasę testową w folderze `src/test
 
 ---
 
-## 4. Obszary bez zautomatyzowanych testów (Pozostałe luki)
-**Pokrycie zautomatyzowane: 0%, Weryfikacja tylko manualna**
+## 4. Obszary weryfikowane manualnie
+**Weryfikacja integracyjna i manualna**
 
-Po przeprowadzonej fali refaktoryzacji i dodaniu nowych klas testowych, jedynym modułem bez zautomatyzowanego testu jednostkowego pozostaje:
+Moduły wymagające fizycznej interakcji ze środowiskiem użytkownika lub bibliotekami zewnętrznymi poddawane są testom manualnym:
 
-* **Generowanie skryptów Python (`GeneratePythonRunnerAction`)**: Funkcjonalność dodana w wersji 1.4.6, która konwertuje modele na kod `doopl`. Brak klasy testowej sprawdzającej poprawność generowanej składni kodu Python.
+* **Generowanie skryptów Python (`GeneratePythonRunnerAction`)**: Konwersja modeli `.mod` na uruchamialne skrypty `doopl`. Weryfikacja poprawności kodu generowanego pliku `.py` oraz powiadomień rynkowych odbywa się w locie.
 
 ---
 

@@ -4,11 +4,16 @@
 
 ## [Unreleased]
 
+## [1.4.9.3] - 2026-08-20
+
 ### Added
 - **Settings:** Added manual "Auto-detect" button in plugin settings for on-demand solver path discovery.
+- **Python Integration:** Documented `GeneratePythonRunnerAction` feature for generating executable `doopl` Python scripts with automatic `.dat` file detection.
+- **Navigation & References:** Enhanced `OplReference` with scope-aware hierarchical resolution, prioritizing local loop/aggregation iterators (`forall`, `sum`) before searching global declarations (`dvar`, `var`, `dexpr`, `tuple`, `piecewise`, `constraint`).
 
 ### Fixed
 - **Rating Links:** Updated JetBrains Marketplace review URLs in `OplRateAction` and `OplRatePrompt` to point directly to the plugin reviews page.
+- **Documentation:** Synchronized all documentation files under `/docs` with current codebase state and English user-facing UI requirements.
 
 ## [1.4.9.2] - 2026-08-19
 
@@ -164,7 +169,12 @@
 - Updated `README.md` feature lists (EN/PL) to match current implementation.
 - Updated `do_zrobienia.md` with explicit `DONE` / `PARTIAL` / `TODO` status markers.
 
-[Unreleased]: https://github.com/JAANULO/CPLEX-Plugin/compare/1.4.7...HEAD
+[Unreleased]: https://github.com/JAANULO/CPLEX-Plugin/compare/1.4.9.3...HEAD
+[1.4.9.3]: https://github.com/JAANULO/CPLEX-Plugin/compare/1.4.9.2...1.4.9.3
+[1.4.9.2]: https://github.com/JAANULO/CPLEX-Plugin/compare/1.4.9.1...1.4.9.2
+[1.4.9.1]: https://github.com/JAANULO/CPLEX-Plugin/compare/1.4.9...1.4.9.1
+[1.4.9]: https://github.com/JAANULO/CPLEX-Plugin/compare/1.4.8...1.4.9
+[1.4.8]: https://github.com/JAANULO/CPLEX-Plugin/compare/1.4.7...1.4.8
 [1.4.7]: https://github.com/JAANULO/CPLEX-Plugin/compare/1.4.6...1.4.7
 [1.4.6]: https://github.com/JAANULO/CPLEX-Plugin/compare/1.4.5...1.4.6
 [1.4.5]: https://github.com/JAANULO/CPLEX-Plugin/compare/1.4.4...1.4.5

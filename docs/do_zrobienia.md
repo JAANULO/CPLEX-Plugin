@@ -118,9 +118,9 @@ Bez tego plugin nie spełnia swojego głównego celu.
 ## Poziom 5: Architektura Referencji (Bardzo trudne)
 
 ### 5.1 Go to Declaration — Skakanie do definicji
-- `PARTIAL` Globalna nawigacja po identyfikatorach (`Ctrl+Click`)
-- `DONE` **Mechanizm:** `PsiReference`
-- `TODO` **Wyzwanie:** Poprawne budowanie drzewa AST i rozwiązywanie referencji ściśle w obrębie zadeklarowanych zasięgów (Scope), aby zmienne lokalne nie nadpisywały globalnych.
+- `DONE` Globalna oraz lokalna nawigacja po identyfikatorach (`Ctrl+Click`)
+- `DONE` **Mechanizm:** `PsiReference` (`OplReference.kt`)
+- `DONE` **Rozwiązano:** Hierarchiczne rozwiązywanie nazw z obsługą zasięgów (najpierw lokalne iteratory `OplIterator` w pętlach/sumach, a następnie deklaracje globalne `dvar`, `var`, `dexpr`, `tuple`, `piecewise`, `constraint`).
 
 ### 5.2 Rename Refactoring
 - `DONE` Bezpieczna zmiana nazw identyfikatorów we wszystkich plikach projektu (`Shift+F6`) przy użyciu interfejsu `PsiNamedElement`.
@@ -130,9 +130,9 @@ Bez tego plugin nie spełnia swojego głównego celu.
 ## Poziom 6: Produkcja i Dystrybucja
 
 ### 6.1 Publikacja na JetBrains Marketplace
-- `PARTIAL` Opis pluginu po angielsku
+- `DONE` Opis pluginu oraz interfejs w 100% po angielsku
 - `TODO` Screenshoty pokazujące działanie
-- `PARTIAL` Uzupełniony CHANGELOG.md
+- `DONE` Uzupełniony CHANGELOG.md
 - `DONE` README z instrukcją instalacji i wymaganiami
 - `TODO` Wygenerowanie i dodanie certyfikatów oraz klucza prywatnego do podpisywania wtyczki (`CERTIFICATE_CHAIN`, `PRIVATE_KEY`, `PRIVATE_KEY_PASSWORD`) w GitHub Secrets
 
