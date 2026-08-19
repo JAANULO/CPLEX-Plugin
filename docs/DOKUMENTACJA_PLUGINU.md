@@ -35,13 +35,19 @@ Ogromny nacisk położyliśmy na polepszenie tzw. "Developer Experience" przy sz
 * **Inteligentne parsowanie Infeasibility (OplInfeasibilityFilter)**: Gdy model matematyczny jest "sprzeczny" (infeasible), zwykły `oplrun` drukuje długi i skomplikowany blok logów.
   * Nasz filtr potrafi to przechwycić, analizuje przy pomocy wyrażeń regularnych precyzyjne koordynaty (np. `ctInfeasible at 4:17-25 model.mod`) i generuje bezpośrednie linki do ograniczających (sprzecznych) równań.
   * Obsługiwane są zarówno pliki modeli (`.mod`), jak i pliki danych (`.dat`).
-* **Pro-aktywne wskazówki (Hints)**: Kiedy plugin zauważy na wyjściu konsoli komunikat `<<< no solution`, ale zobaczy, że nie użyłeś Conflict Refinera, to wstrzyknie żółty komunikat (na STDERR) o treści przypominającej Ci: `[Wskazówka: aby zdiagnozować sprzeczność, włącz 'Run conflict refiner' w ustawieniach i nadaj nazwy ograniczeniom]`.
+* **Pro-aktywne wskazówki (Hints)**: Kiedy plugin zauważy na wyjściu konsoli komunikat `<<< no solution`, ale zobaczy, że nie użyłeś Conflict Refinera, to wstrzyknie żółty komunikat (na STDERR) o treści przypominającej Ci: `[Hint: To diagnose infeasibility, enable 'Run conflict refiner' in Run Configuration settings and label your constraints]`.
 
 ## 4. Ustawienia Globalne
 * **Global Configuration (Settings -> Tools -> CPLEX OPL)**: Konfiguracja IDE przechowuje zadaną przez Ciebie ścieżkę do instalacji CPLEX-a globalnie. Jeśli tworzysz nowy projekt z modelem lub nową konfigurację Run, system automatycznie zaimportuje to ustawienie. Nie musisz szukać ścieżki za każdym razem.
 
+## 5. Informacje zwrotne i Raportowanie Błędów (Feedback & Error Reporting)
+* **Automatyczne Raportowanie Błędów (OplErrorReportSubmitter)**: Integracja z natywnym dialogiem błędów JetBrains IDE. W przypadku wystąpienia nieobsłużonego wyjątku w pluginie, użytkownik otrzymuje przycisk "Report Issue on GitHub", który bezpośrednio otwiera przeglądarkę ze sformatowanym zgłoszeniem (stacktrace, wersja IDE, system operacyjny).
+* **System Oceniania Pluginu (OplRateAction & OplRatePrompt)**:
+  * Dedykowana opcja w menu: `Help -> Rate CPLEX OPL Plugin...`.
+  * Inteligentne powiadomienie (Balloon): Po 5. pomyślnym uruchomieniu modelu wtyczka dyskretnie wyświetla powiadomienie z prośbą o ocenę na JetBrains Marketplace.
+
 ## Podsumowanie stanu technicznego
-Wszystkie nowo-wdrożone systemy – w tym parsowanie konsoli z filtrem `OplInfeasibilityFilter`, silnik watchdoga i budowanie dynamicznych komend CLI – posiadają napisane testy jednostkowe (`OplConsoleFilterTest.kt`, `OplRunConfigurationTest.kt`). Komenda weryfikująca cały build przeszła pomyślnie.
+Wszystkie nowo-wdrożone systemy – w tym parsowanie konsoli z filtrem `OplInfeasibilityFilter`, silnik watchdoga, wykrywanie plików `data.dat`, raportowanie błędów `OplErrorReportSubmitter` oraz budowanie dynamicznych komend CLI – posiadają napisane testy jednostkowe (`OplConsoleFilterTest.kt`, `OplRunConfigurationTest.kt`, `OplErrorReportSubmitterTest.kt`). Komenda weryfikująca cały build przeszła pomyślnie.
 
 Pliki są zapisane w kodzie źródłowym, a cały plugin jest połączony i skompilowany.
 Możesz być spokojny - praca wykonana podczas naszych ostatnich sesji nie zginęła.
