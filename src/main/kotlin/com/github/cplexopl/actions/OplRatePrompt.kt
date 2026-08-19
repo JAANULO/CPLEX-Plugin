@@ -17,7 +17,7 @@ object OplRatePrompt {
         )
 
         notification.addAction(NotificationAction.createSimple("Rate Plugin") {
-            BrowserUtil.browse("https://plugins.jetbrains.com/plugin/31125-cplex-opl")
+            BrowserUtil.browse("https://plugins.jetbrains.com/plugin/31125-cplex-opl/reviews")
             OplSettingsState.instance.neverShowRatePrompt = true
             notification.expire()
         })

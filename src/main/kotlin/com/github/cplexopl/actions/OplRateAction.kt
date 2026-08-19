@@ -7,7 +7,7 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 
 class OplRateAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
-        BrowserUtil.browse("https://plugins.jetbrains.com/plugin/31125-cplex-opl")
+        BrowserUtil.browse("https://plugins.jetbrains.com/plugin/31125-cplex-opl/reviews")
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
