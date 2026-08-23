@@ -7,7 +7,7 @@ class OplSettingsConfigurable : Configurable {
     private var component: OplSettingsComponent? = null
 
     // Name of tab in Settings panel
-    override fun getDisplayName(): String = "CPLEX OPL"
+    override fun getDisplayName(): String = com.github.cplexopl.OplBundle.message("settings.configurable.displayName")
 
     override fun createComponent(): JComponent {
         component = OplSettingsComponent()

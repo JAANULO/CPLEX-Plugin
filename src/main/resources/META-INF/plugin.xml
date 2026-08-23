@@ -34,6 +34,8 @@
     <!-- Optional Python support for doopl/docplex autocomplete -->
     <depends optional="true" config-file="python-support.xml">com.intellij.modules.python</depends>
 
+    <resource-bundle>messages.OplBundle</resource-bundle>
+
     <extensions defaultExtensionNs="com.intellij">
         <notificationGroup id="CPLEX OPL"
                            displayType="BALLOON"
@@ -113,29 +115,23 @@
 
     <actions>
         <action id="OPL.RunModel"
-                class="com.github.cplexopl.actions.RunOplModelAction"
-                text="Run OPL Model"
-                description="Run current OPL model with CPLEX solver">
+                class="com.github.cplexopl.actions.RunOplModelAction">
             <add-to-group group-id="RunMenu" anchor="first"/>
             <keyboard-shortcut keymap="$default" first-keystroke="shift F10"/>
         </action>
 
-        <action id="Opl.NewFile" class="com.github.cplexopl.actions.OplCreateFileAction" text="OPL File" description="Create new OPL file" icon="/icons/oplMod.svg">
+        <action id="Opl.NewFile" class="com.github.cplexopl.actions.OplCreateFileAction" icon="/icons/oplMod.svg">
             <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFile"/>
         </action>
 
         <action id="OPL.GeneratePythonRunner"
-                class="com.github.cplexopl.actions.GeneratePythonRunnerAction"
-                text="Generate Python Runner"
-                description="Generate a Python doopl runner script for this OPL model">
+                class="com.github.cplexopl.actions.GeneratePythonRunnerAction">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
 
         <action id="OPL.RatePlugin"
-                class="com.github.cplexopl.actions.OplRateAction"
-                text="Rate CPLEX OPL Plugin..."
-                description="Open GitHub / Marketplace page to rate or star this plugin">
+                class="com.github.cplexopl.actions.OplRateAction">
             <add-to-group group-id="HelpMenu" anchor="last"/>
         </action>
     </actions>

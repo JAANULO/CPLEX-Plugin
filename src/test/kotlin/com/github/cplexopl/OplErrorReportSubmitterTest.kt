@@ -10,6 +10,6 @@ class OplErrorReportSubmitterTest : BasePlatformTestCase() {
     fun testErrorReportSubmitterActionText() {
         val submitter = OplErrorReportSubmitter()
         assertNotNull("ErrorReportSubmitter nie powinien być null", submitter)
-        assertEquals("Report Issue on GitHub", submitter.reportActionText)
+        assertEquals(com.github.cplexopl.OplBundle.message("error.submitter.reportAction"), submitter.reportActionText)
     }
 }

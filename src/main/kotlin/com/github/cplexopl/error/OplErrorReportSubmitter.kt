@@ -11,7 +11,7 @@ import java.nio.charset.StandardCharsets
 
 class OplErrorReportSubmitter : ErrorReportSubmitter() {
 
-    override fun getReportActionText(): String = "Report Issue on GitHub"
+    override fun getReportActionText(): String = com.github.cplexopl.OplBundle.message("error.submitter.reportAction")
 
     override fun submit(
         events: Array<out IdeaLoggingEvent>,

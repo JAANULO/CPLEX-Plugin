@@ -27,8 +27,8 @@ class OplRunConfigurationEditor(private val project: Project) : SettingsEditor<O
         addBrowseFolderListener(
             project,
             FileChooserDescriptorFactory.createSingleFileDescriptor("mod")
-                .withTitle("Select OPL Model File")
-                .withDescription("Select the .mod file to run")
+                .withTitle(com.github.cplexopl.OplBundle.message("runConfig.editor.modelFile.title"))
+                .withDescription(com.github.cplexopl.OplBundle.message("runConfig.editor.modelFile.description"))
         )
     }
 
@@ -36,8 +36,8 @@ class OplRunConfigurationEditor(private val project: Project) : SettingsEditor<O
         addBrowseFolderListener(
             project,
             FileChooserDescriptorFactory.createSingleFileDescriptor("dat")
-                .withTitle("Select OPL Data File")
-                .withDescription("Select the .dat data file (optional)")
+                .withTitle(com.github.cplexopl.OplBundle.message("runConfig.editor.dataFile.title"))
+                .withDescription(com.github.cplexopl.OplBundle.message("runConfig.editor.dataFile.description"))
         )
     }
 
@@ -45,21 +45,21 @@ class OplRunConfigurationEditor(private val project: Project) : SettingsEditor<O
         addBrowseFolderListener(
             project,
             FileChooserDescriptorFactory.createSingleFileDescriptor("ops")
-                .withTitle("Select OPL Settings File")
-                .withDescription("Select the .ops settings file (optional)")
+                .withTitle(com.github.cplexopl.OplBundle.message("runConfig.editor.settingsFile.title"))
+                .withDescription(com.github.cplexopl.OplBundle.message("runConfig.editor.settingsFile.description"))
         )
     }
 
     private val cplexPathField = TextFieldWithBrowseButton().apply {
         addBrowseFolderListener(
             project,
-            FileChooserDescriptorFactory.createSingleFileOrExecutableAppDescriptor()
-                .withTitle("Select Oplrun Executable")
-                .withDescription("Select the oplrun binary from your CPLEX installation")
+            FileChooserDescriptorFactory.createSingleFileDescriptor("exe")
+                .withTitle(com.github.cplexopl.OplBundle.message("runConfig.editor.oplrun.title"))
+                .withDescription(com.github.cplexopl.OplBundle.message("runConfig.editor.oplrun.description"))
         )
     }
 
-    private val autoDetectButton = JButton("Auto-Detect").apply {
+    private val autoDetectButton = JButton(com.github.cplexopl.OplBundle.message("runConfig.editor.autodetect.button")).apply {
         addActionListener {
             val foundPath = CplexPathFinder.find()
             if (foundPath != null) {
@@ -67,8 +67,8 @@ class OplRunConfigurationEditor(private val project: Project) : SettingsEditor<O
                 OplSettingsState.instance.savedCplexPath = foundPath // Global save!
             } else {
                 Messages.showWarningDialog(
-                    "Could not automatically find the oplrun executable in default locations.\nPlease select the path manually.",
-                    "Auto-Detect Failed"
+                    com.github.cplexopl.OplBundle.message("runConfig.editor.autodetect.failure.message"),
+                    com.github.cplexopl.OplBundle.message("runConfig.editor.autodetect.failure.title")
                 )
             }
         }
@@ -81,21 +81,21 @@ class OplRunConfigurationEditor(private val project: Project) : SettingsEditor<O
 
     // New fields
     private val timeoutField = JTextField().apply {
-        toolTipText = "Time limit in seconds. 0 means no limit."
+        toolTipText = com.github.cplexopl.OplBundle.message("runConfig.editor.timeout.tooltip")
     }
     private val additionalArgsField = JTextField().apply {
-        toolTipText = "Additional arguments to pass to oplrun, e.g. -tune"
+        toolTipText = com.github.cplexopl.OplBundle.message("runConfig.editor.args.tooltip")
     }
-    private val runConflictRefinerCheckbox = JCheckBox("Run conflict refiner on infeasible models")
+    private val runConflictRefinerCheckbox = JCheckBox(com.github.cplexopl.OplBundle.message("runConfig.editor.conflict.checkbox"))
 
     // Build form panel
     private val panel: JPanel = FormBuilder.createFormBuilder()
-        .addLabeledComponent("Model file (.mod):", modelFileField)
-        .addLabeledComponent("Data file (.dat):", dataFileField)
-        .addLabeledComponent("Settings file (.ops):", settingsFileField)
-        .addLabeledComponent("Oplrun path:", pathPanel)
-        .addLabeledComponent("Additional CLI args:", additionalArgsField)
-        .addLabeledComponent("Timeout (seconds):", timeoutField)
+        .addLabeledComponent(com.github.cplexopl.OplBundle.message("runConfig.editor.modelFile.label"), modelFileField)
+        .addLabeledComponent(com.github.cplexopl.OplBundle.message("runConfig.editor.dataFile.label"), dataFileField)
+        .addLabeledComponent(com.github.cplexopl.OplBundle.message("runConfig.editor.settingsFile.label"), settingsFileField)
+        .addLabeledComponent(com.github.cplexopl.OplBundle.message("runConfig.editor.path.label"), pathPanel)
+        .addLabeledComponent(com.github.cplexopl.OplBundle.message("runConfig.editor.args.label"), additionalArgsField)
+        .addLabeledComponent(com.github.cplexopl.OplBundle.message("runConfig.editor.timeout.label"), timeoutField)
         .addComponent(runConflictRefinerCheckbox)
         .addComponentFillVertically(JPanel(), 0)
         .panel

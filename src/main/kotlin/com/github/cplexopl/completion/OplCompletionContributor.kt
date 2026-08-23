@@ -5,6 +5,7 @@ import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.util.ProcessingContext
+import com.github.cplexopl.OplBundle
 
 // CompletionContributor = class adding autocomplete hints (Ctrl+Space)
 // LookupElementBuilder = builder for hint list element
@@ -27,53 +28,53 @@ class OplKeywordCompletionProvider : CompletionProvider<CompletionParameters>() 
     // Keywords with descriptions - will appear on hint list
     private val keywords = listOf(
         // Data types
-        "int" to "Integer type",
-        "float" to "Float type",
-        "boolean" to "Boolean type",
-        "string" to "String type",
-        "range" to "Range type (e.g. range R = 1..10)",
+        "int" to OplBundle.message("completion.keyword.int"),
+        "float" to OplBundle.message("completion.keyword.float"),
+        "boolean" to OplBundle.message("completion.keyword.boolean"),
+        "string" to OplBundle.message("completion.keyword.string"),
+        "range" to OplBundle.message("completion.keyword.range"),
 
         // Decision variables
-        "dvar" to "Decision variable",
-        "dexpr" to "Decision expression",
+        "dvar" to OplBundle.message("completion.keyword.dvar"),
+        "dexpr" to OplBundle.message("completion.keyword.dexpr"),
 
         // Optimization objective
-        "minimize" to "Minimize objective function",
-        "maximize" to "Maximize objective function",
+        "minimize" to OplBundle.message("completion.keyword.minimize"),
+        "maximize" to OplBundle.message("completion.keyword.maximize"),
 
         // Constraints
-        "subject to" to "Constraint section",
-        "forall" to "Universal quantifier",
-        "exists" to "Existential quantifier",
+        "subject to" to OplBundle.message("completion.keyword.subject.to"),
+        "forall" to OplBundle.message("completion.keyword.forall"),
+        "exists" to OplBundle.message("completion.keyword.exists"),
 
         // Operators
-        "sum" to "Summation operator",
-        "all" to "All elements",
+        "sum" to OplBundle.message("completion.keyword.sum"),
+        "all" to OplBundle.message("completion.keyword.all"),
 
         // Structures
-        "tuple" to "Tuple type definition",
-        "execute" to "Scripting block",
-        "include" to "Include another file",
-        "assert" to "Assertion check",
+        "tuple" to OplBundle.message("completion.keyword.tuple"),
+        "execute" to OplBundle.message("completion.keyword.execute"),
+        "include" to OplBundle.message("completion.keyword.include"),
+        "assert" to OplBundle.message("completion.keyword.assert"),
 
         // Other
-        "in" to "Membership / range operator",
-        "using" to "Using constraint programming",
-        "with" to "With clause"
+        "in" to OplBundle.message("completion.keyword.in"),
+        "using" to OplBundle.message("completion.keyword.using"),
+        "with" to OplBundle.message("completion.keyword.with")
     )
 
     // CPLEX OPL built-in functions
     private val builtinFunctions = listOf(
-        "abs" to "Absolute value",
-        "ceil" to "Ceiling function",
-        "floor" to "Floor function",
-        "round" to "Round function",
-        "sqrt" to "Square root",
-        "log" to "Natural logarithm",
-        "exp" to "Exponential function",
-        "max" to "Maximum value",
-        "min" to "Minimum value",
-        "card" to "Cardinality (set size)"
+        "abs" to OplBundle.message("completion.func.abs"),
+        "ceil" to OplBundle.message("completion.func.ceil"),
+        "floor" to OplBundle.message("completion.func.floor"),
+        "round" to OplBundle.message("completion.func.round"),
+        "sqrt" to OplBundle.message("completion.func.sqrt"),
+        "log" to OplBundle.message("completion.func.log"),
+        "exp" to OplBundle.message("completion.func.exp"),
+        "max" to OplBundle.message("completion.func.max"),
+        "min" to OplBundle.message("completion.func.min"),
+        "card" to OplBundle.message("completion.func.card")
     )
 
     override fun addCompletions(
@@ -119,7 +120,7 @@ class OplKeywordCompletionProvider : CompletionProvider<CompletionParameters>() 
                 result.addElement(
                     LookupElementBuilder.create(variable)
                         .withIcon(com.intellij.icons.AllIcons.Nodes.Variable)
-                        .withTypeText("Local Variable")
+                        .withTypeText(OplBundle.message("completion.local.variable"))
                 )
             }
         }

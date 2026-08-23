@@ -70,20 +70,18 @@ class OplRunConfiguration(
     override fun getConfigurationEditor() = OplRunConfigurationEditor(project)
 
     override fun checkConfiguration() {
-        if (modelFile.isEmpty()) throw RuntimeConfigurationError("Model file (.mod) not specified")
-        if (!File(modelFile).exists()) throw RuntimeConfigurationError("Model file does not exist: $modelFile")
+        if (modelFile.isEmpty()) throw RuntimeConfigurationError(com.github.cplexopl.OplBundle.message("error.run.modelNotSpecified"))
+        if (!File(modelFile).exists()) throw RuntimeConfigurationError(com.github.cplexopl.OplBundle.message("error.run.modelNotFound", modelFile))
         
         if (dataFile.isNotEmpty() && !File(dataFile).exists()) {
-            throw RuntimeConfigurationError("Data file does not exist: $dataFile")
+            throw RuntimeConfigurationError(com.github.cplexopl.OplBundle.message("error.run.dataNotFound", dataFile))
         }
         
         if (settingsFile.isNotEmpty() && !File(settingsFile).exists()) {
-            throw RuntimeConfigurationError("Settings file (.ops) does not exist: $settingsFile")
+            throw RuntimeConfigurationError(com.github.cplexopl.OplBundle.message("error.run.settingsNotFound", settingsFile))
         }
         
-        if (cplexPath.isEmpty()) throw RuntimeConfigurationError(
-            "CPLEX installation not found. Set path globally in: File -> Settings -> Tools -> CPLEX OPL"
-        )
+        if (cplexPath.isEmpty()) throw RuntimeConfigurationError(com.github.cplexopl.OplBundle.message("error.run.cplexNotFound"))
     }
 
     fun createCommandLine(tempModelFile: File): GeneralCommandLine {
@@ -130,7 +128,7 @@ class OplRunConfiguration(
                 val doc = builder.parse(settingsFile)
                 
                 val result = StringBuilder()
-                result.appendLine("// TEMP FILE GENERATED AUTOMATICALLY BY CPLEX OPL JETBRAINS PLUGIN. SAFE TO REMOVE.")
+                result.appendLine(com.github.cplexopl.OplBundle.message("error.run.tempFileComment"))
                 result.appendLine("execute {")
                 
                 val settings = doc.getElementsByTagName("setting")
@@ -198,7 +196,7 @@ class OplRunState(
                 if (tempModelFile.exists()) {
                     tempModelFile.delete()
                 }
-                throw RuntimeConfigurationException("Failed to prepare model file: ${e.message}")
+                throw RuntimeConfigurationException(com.github.cplexopl.OplBundle.message("error.run.prepareFailed", e.message ?: ""))
             }
 
             val commandLine = config.createCommandLine(tempModelFile)
@@ -211,7 +209,7 @@ class OplRunState(
             if (timeout > 0) {
                 watchdogTask = AppExecutorUtil.getAppScheduledExecutorService().schedule({
                     if (!handler.isProcessTerminated) {
-                        handler.notifyTextAvailable("\nProcess killed due to timeout (${timeout}s)\n", ProcessOutputTypes.STDERR)
+                        handler.notifyTextAvailable(com.github.cplexopl.OplBundle.message("error.run.timeout", timeout.toString()), ProcessOutputTypes.STDERR)
                         handler.destroyProcess()
                     }
                 }, timeout.toLong(), TimeUnit.SECONDS)
@@ -222,7 +220,7 @@ class OplRunState(
                     val text = event.text
                     if (text.contains("<<< no solution") && !config.runConflictRefiner) {
                         handler.notifyTextAvailable(
-                            "\n[Hint: To diagnose infeasibility, enable 'Run conflict refiner' in Run Configuration settings and label your constraints]\n",
+                            com.github.cplexopl.OplBundle.message("error.run.conflictHint"),
                             ProcessOutputTypes.STDERR
                         )
                     }
@@ -251,7 +249,7 @@ class OplRunState(
             ProcessTerminatedListener.attach(handler)
             return handler
         } catch (e: Exception) {
-            throw RuntimeConfigurationException("Failed to start OPL process: ${e.message}")
+            throw RuntimeConfigurationException(com.github.cplexopl.OplBundle.message("error.run.startFailed", e.message ?: ""))
         }
     }
 }

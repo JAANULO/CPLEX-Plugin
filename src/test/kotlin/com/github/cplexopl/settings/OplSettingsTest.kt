@@ -8,7 +8,7 @@ class OplSettingsTest : BasePlatformTestCase() {
         val configurable = OplSettingsConfigurable()
         val panel = configurable.createComponent()
         assertNotNull("Panel should be created", panel)
-        assertEquals("CPLEX OPL", configurable.displayName)
+        assertEquals(com.github.cplexopl.OplBundle.message("settings.configurable.displayName"), configurable.displayName)
 
         val state = OplSettingsState.instance
         val originalPath = state.savedCplexPath

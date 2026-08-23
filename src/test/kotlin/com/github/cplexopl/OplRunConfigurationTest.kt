@@ -11,7 +11,7 @@ class OplRunConfigurationTest : BasePlatformTestCase() {
     fun testRunConfigurationRegistration() {
         val configurationType = ConfigurationTypeUtil.findConfigurationType(OplRunConfigurationType::class.java)
         assertNotNull("OplRunConfigurationType nie zostało poprawnie zarejestrowane", configurationType)
-        assertEquals("OPL Model", configurationType.displayName)
+        assertEquals(com.github.cplexopl.OplBundle.message("runConfig.type.displayName"), configurationType.displayName)
     }
 
     fun testCommandLineConstruction() {
@@ -139,8 +139,8 @@ class OplRunConfigurationTest : BasePlatformTestCase() {
             configuration.checkConfiguration()
             fail("checkConfiguration() powinien rzucić wyjątek dla brakującego data file")
         } catch (e: Exception) {
-            assertTrue("Wiadomość o błędzie powinna zawierać 'Data file'", 
-                e.message?.contains("Data file") == true)
+            assertTrue("Wiadomość o błędzie powinna zawierać odpowiedni tekst z Bundle", 
+                e.message?.contains(com.github.cplexopl.OplBundle.message("error.run.dataNotFound", configuration.dataFile)) == true)
         } finally {
             modelFile.delete()
             tempDir.delete()

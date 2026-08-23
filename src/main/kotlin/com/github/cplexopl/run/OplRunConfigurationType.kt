@@ -7,9 +7,9 @@ import com.intellij.icons.AllIcons
 // ConfigurationType = entry in "Add New Configuration" list (+ in Run dropdown)
 class OplRunConfigurationType : ConfigurationTypeBase(
     "OPL_RUN",                          // Unique identifier
-    "OPL Model",                        // Displayed name
-    "Run IBM CPLEX OPL model",         // Description
-    AllIcons.RunConfigurations.Application  // Icon
+    com.github.cplexopl.OplBundle.message("runConfig.type.displayName"),                        // Displayed name
+    com.github.cplexopl.OplBundle.message("runConfig.type.description"),         // Description
+    com.intellij.openapi.util.NotNullLazyValue.createValue { com.intellij.icons.AllIcons.RunConfigurations.Application }
 ) {
     init {
         // Each ConfigurationType must have at least one factory
@@ -28,7 +28,7 @@ class OplConfigurationFactory(type: ConfigurationType) : ConfigurationFactory(ty
     override fun getId(): String = "OPL_CONFIGURATION_FACTORY"
 
     override fun createTemplateConfiguration(project: Project): RunConfiguration {
-        return OplRunConfiguration(project, this, "OPL Model")
+        return OplRunConfiguration(project, this, com.github.cplexopl.OplBundle.message("runConfig.type.displayName"))
     }
 
     override fun getOptionsClass() = OplRunConfigurationOptions::class.java

@@ -11,15 +11,15 @@ import javax.swing.JPanel
 class OplSettingsComponent {
     val panel: JPanel
     val cplexPathField = TextFieldWithBrowseButton()
-    val autoDetectButton = JButton("Auto-detect")
+    val autoDetectButton = JButton(com.github.cplexopl.OplBundle.message("settings.autodetect.button"))
 
     init {
         // Dialog window for selecting executable file
         cplexPathField.addBrowseFolderListener(
             null,
             FileChooserDescriptorFactory.createSingleFileOrExecutableAppDescriptor().apply {
-                title = "Select CPLEX Executable (Oplrun)"
-                description = "Specify the path to the oplrun executable."
+                title = com.github.cplexopl.OplBundle.message("settings.dialog.title")
+                description = com.github.cplexopl.OplBundle.message("settings.dialog.description")
             }
         )
 
@@ -29,20 +29,20 @@ class OplSettingsComponent {
                 cplexPathField.text = detected
                 Messages.showInfoMessage(
                     panel,
-                    "Detected CPLEX at: $detected",
-                    "CPLEX Auto-Detection"
+                    com.github.cplexopl.OplBundle.message("settings.autodetect.success.message", detected),
+                    com.github.cplexopl.OplBundle.message("settings.autodetect.success.title")
                 )
             } else {
                 Messages.showWarningDialog(
                     panel,
-                    "Could not auto-detect CPLEX installation path. Please specify it manually.",
-                    "CPLEX Auto-Detection"
+                    com.github.cplexopl.OplBundle.message("settings.autodetect.failure.message"),
+                    com.github.cplexopl.OplBundle.message("settings.autodetect.failure.title")
                 )
             }
         }
 
         panel = FormBuilder.createFormBuilder()
-            .addLabeledComponent("Path to oplrun:", cplexPathField, 1, false)
+            .addLabeledComponent(com.github.cplexopl.OplBundle.message("settings.cplexPath.label"), cplexPathField, 1, false)
             .addComponent(autoDetectButton)
             .addComponentFillVertically(JPanel(), 0)
             .panel
