@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+### Added
+- **Localization (i18n):** Extracted hardcoded English strings into a central `OplBundle.properties` resource bundle.
+
+### Changed
+- **Localization (i18n):** Migrated Run Configurations, Settings, Error Reporter, and Code Completion features to use `DynamicBundle` for dynamic UI string loading.
+
 ## [1.4.9.3] - 2026-08-20
 
 ### Added
