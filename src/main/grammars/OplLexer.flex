@@ -81,6 +81,7 @@ BLOCK_COMMENT   = "/*"([^*]|\*[^/])*"*/"
 "pack"                  { return OplTypes.PACK; }
 "size"                  { return OplTypes.SIZE; }
 "piecewise"             { return OplTypes.PIECEWISE; }
+"pwlFunction"           { return OplTypes.PWLFUNCTION; }
 
 // Literals
 {STRING}                { return OplTypes.STRING_LITERAL; }

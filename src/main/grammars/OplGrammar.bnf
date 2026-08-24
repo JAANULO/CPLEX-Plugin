@@ -83,6 +83,7 @@
     RPAREN      = ')'
 
     PIECEWISE   = 'piecewise'
+    PWLFUNCTION = 'pwlFunction'
     PIPE        = '|'
     ARROW       = '->'
 
@@ -122,8 +123,8 @@ private typeRef ::= baseType | ID | LBRACE (baseType | ID) RBRACE
 assertItem ::= (FORALL LPAREN oplIterator (COMMA oplIterator)* RPAREN)? expression SEMICOLON
 assertDeclaration ::= ASSERT (LBRACE assertItem* RBRACE SEMICOLON? | expression SEMICOLON) { pin=1 recoverWhile=statement_recover }
 
-// Piecewise linear function declaration
-piecewiseDeclaration ::= PIECEWISE LBRACE (expression (ARROW | IMPLIES) expression SEMICOLON)* expression RBRACE ID SEMICOLON {
+// Piecewise linear function declaration (e.g. pwlFunction cost = piecewise { 10 -> 0.2; 25 } (0, 0); )
+piecewiseDeclaration ::= PWLFUNCTION ID EQ PIECEWISE LBRACE (expression (ARROW | IMPLIES) expression SEMICOLON)* expression RBRACE (LPAREN expression (COMMA expression)* RPAREN)? SEMICOLON {
   pin=1
   recoverWhile=statement_recover
   implements="com.github.cplexopl.psi.OplNamedElement"
@@ -215,9 +216,9 @@ factor ::= (PLUS | MINUS) factor
          | LBRACKET (expression (COMMA expression)*)? RBRACKET
          | LPAREN expression RPAREN
          | LT expression (COMMA expression)* GT
-         | LBRACE (expression PIPE oplIterator (COMMA oplIterator)* | (expression (COMMA expression)*)?) RBRACE
+         | LBRACE (expression PIPE oplIterator (COMMA oplIterator)* (COLON expression)? | (expression (COMMA expression)*)?) RBRACE
          | LBRACE RBRACE
-         | PIECEWISE LBRACE (expression (ARROW | IMPLIES) expression SEMICOLON)* expression RBRACE
+         | PIECEWISE LBRACE (expression (ARROW | IMPLIES) expression SEMICOLON)* expression RBRACE (LPAREN expression (COMMA expression)* RPAREN)?
 
 // Recovery rule: "Skip everything until a new declaration start or semicolon"
-private statement_recover ::= !(INT | FLOAT | BOOLEAN | INTERVAL | SEQUENCE | STRING | RANGE | DVAR | DEXPR | TUPLE | MINIMIZE | MAXIMIZE | SUBJECT | INCLUDE | EXECUTE | MAIN | USING | LBRACE | ID | SEMICOLON | RBRACE | ASSERT | PIECEWISE)
+private statement_recover ::= !(INT | FLOAT | BOOLEAN | INTERVAL | SEQUENCE | STRING | RANGE | DVAR | DEXPR | TUPLE | MINIMIZE | MAXIMIZE | SUBJECT | INCLUDE | EXECUTE | MAIN | USING | LBRACE | ID | SEMICOLON | RBRACE | ASSERT | PIECEWISE | PWLFUNCTION)
