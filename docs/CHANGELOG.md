@@ -4,7 +4,10 @@
 
 ## [Unreleased]
 
+## [1.4.9.4] - 2026-08-24
+
 ### Added
+- **Language Parser:** Added syntax parsing support for piecewise linear function declarations (`pwlFunction`).
 - **Localization (i18n):** Extracted hardcoded English strings into a central `OplBundle.properties` resource bundle.
 
 ### Changed
@@ -175,7 +178,8 @@
 - Updated `README.md` feature lists (EN/PL) to match current implementation.
 - Updated `do_zrobienia.md` with explicit `DONE` / `PARTIAL` / `TODO` status markers.
 
-[Unreleased]: https://github.com/JAANULO/CPLEX-Plugin/compare/1.4.9.3...HEAD
+[Unreleased]: https://github.com/JAANULO/CPLEX-Plugin/compare/1.4.9.4...HEAD
+[1.4.9.4]: https://github.com/JAANULO/CPLEX-Plugin/compare/1.4.9.3...1.4.9.4
 [1.4.9.3]: https://github.com/JAANULO/CPLEX-Plugin/compare/1.4.9.2...1.4.9.3
 [1.4.9.2]: https://github.com/JAANULO/CPLEX-Plugin/compare/1.4.9.1...1.4.9.2
 [1.4.9.1]: https://github.com/JAANULO/CPLEX-Plugin/compare/1.4.9...1.4.9.1
