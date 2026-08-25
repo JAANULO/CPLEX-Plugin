@@ -16,13 +16,13 @@ object OplRatePrompt {
             NotificationType.INFORMATION
         )
 
-        notification.addAction(NotificationAction.createSimple("Rate Plugin") {
+        notification.addAction(NotificationAction.createSimple("Rate plugin") {
             BrowserUtil.browse("https://plugins.jetbrains.com/plugin/31125-cplex-opl/reviews")
             OplSettingsState.instance.neverShowRatePrompt = true
             notification.expire()
         })
 
-        notification.addAction(NotificationAction.createSimple("Don't Ask Again") {
+        notification.addAction(NotificationAction.createSimple("Don't ask again") {
             OplSettingsState.instance.neverShowRatePrompt = true
             notification.expire()
         })
