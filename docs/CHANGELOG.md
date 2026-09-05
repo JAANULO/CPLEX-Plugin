@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+### Added
+- **Bug Reporter:** Zbieranie danych środowiskowych (wersja IDE, wersja pluginu, OS) dla automatycznie generowanych zgłoszeń o błędach na GitHubie.
+
+### Changed
+- **Plugin Metadata:** Migracja opisu pluginu z `plugin.xml` do pliku `docs/DESCRIPTION.md` budowanego dynamicznie w Gradle.
+
 ### Fixed
 - **Console Filters:** Optimized `OplInfeasibilityFilter` and `OplLinkFilter` to prevent catastrophic backtracking and drastically improve processing speed on extremely long console output lines.
 
