@@ -3,30 +3,7 @@
     <name>CPLEX OPL</name>
     <vendor email="aton.andrzejewski@gmail.com" url="https://github.com/JAANULO/CPLEX-Plugin">Janusz Andrzejewski</vendor>
 
-    <description><![CDATA[
-        <h3>CPLEX OPL Support for JetBrains IDEs</h3>
-        <p>Language support for IBM ILOG CPLEX Optimization Programming Language (OPL), including syntax highlighting, code completion, and a built-in runner for the <i>oplrun</i> solver.</p>
 
-        <h4>Features:</h4>
-        <ul>
-            <li><b>Syntax Highlighting:</b> Keywords, model structure, and operators for <code>.mod</code> files.</li>
-            <li><b>Code Completion:</b> Keyword and built-in function completion.</li>
-            <li><b>Run Configuration:</b> Built-in "Run Opl Model" configuration for direct <i>oplrun</i> execution from the editor.</li>
-            <li><b>Auto-Pairing:</b> Automatic <code>.dat</code> file pairing when a matching file name exists.</li>
-            <li><b>Console Navigation:</b> Clickable solver error links in the run console.</li>
-            <li><b>Structure View:</b> Side panel listing declarations, objective, and constraints.</li>
-            <li><b>Editor Utilities:</b> Live templates, commenter, brace matching, and a basic code formatter.</li>
-        </ul>
-
-        <p>Requires a local installation of IBM ILOG CPLEX Studio. The path to <i>oplrun</i> can be set manually or auto-detected from common install locations.</p>
-    ]]></description>
-
-    <change-notes><![CDATA[
-        <ul>
-            <li>Initial release: Support for syntax highlighting and model execution.</li>
-            <li>Added automatic CPLEX path detection mechanism.</li>
-        </ul>
-    ]]></change-notes>
 
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.lang</depends>

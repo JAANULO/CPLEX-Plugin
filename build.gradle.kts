@@ -64,7 +64,7 @@ intellijPlatform {
             name = providers.gradleProperty("pluginVendor")
         }
 
-        description.set("Native support for IBM ILOG CPLEX OPL in JetBrains IDEs: syntax highlighting, code completion, and a built-in oplrun runner.")
+        description = providers.fileContents(layout.projectDirectory.file("docs/DESCRIPTION.md")).asText.map { markdownToHTML(it) }
 
         val changelog = project.changelog
         changeNotes = providers.gradleProperty("pluginVersion").map { pluginVersion ->
