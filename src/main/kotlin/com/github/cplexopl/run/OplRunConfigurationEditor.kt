@@ -90,7 +90,7 @@ class OplRunConfigurationEditor(private val project: Project) : SettingsEditor<O
     }
     private val runConflictRefinerCheckbox = JCheckBox(com.github.cplexopl.OplBundle.message("runConfig.editor.conflict.checkbox"))
 
-    private val executionModeCombo = ComboBox(ExecutionMode.values()).apply {
+    private val executionModeCombo = ComboBox(ExecutionMode.entries.toTypedArray()).apply {
         addItemListener { e ->
             if (e.stateChange == ItemEvent.SELECTED) {
                 updateVisibility()

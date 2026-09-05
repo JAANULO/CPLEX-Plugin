@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [1.4.9.5] - 2026-09-05
+
 ### Added
 - **Run Configuration:** Added `ExecutionMode` option to support remote execution environments via WSL (Windows Subsystem for Linux) and Docker containers, featuring automatic path translation.
 - **Bug Reporter:** Added collection of environment data (IDE version, plugin version, OS) for auto-generated error reports on GitHub.
@@ -14,6 +16,7 @@
 ### Fixed
 - **Compatibility:** Eliminated a critical class validation error (`NoSuchFieldError` caused by Kotlin compiler specification on older JetBrains installations) for the Marketplace component by using safe Java Reflection in the `OplErrorReportSubmitter` module.
 - **Console Filters:** Optimized `OplInfeasibilityFilter` and `OplLinkFilter` to prevent catastrophic backtracking and drastically improve processing speed on extremely long console output lines.
+- **Code Quality:** Resolved Qodana warnings by standardizing sentence capitalization in UI string properties and migrating to `Enum.entries` in Kotlin.
 
 ## [1.4.9.4] - 2026-08-24
 
