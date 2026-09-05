@@ -4,6 +4,8 @@ import com.intellij.execution.configurations.*
 import com.intellij.openapi.project.Project
 import com.intellij.icons.AllIcons
 
+enum class ExecutionMode { LOCAL, WSL, DOCKER }
+
 // ConfigurationType = entry in "Add New Configuration" list (+ in Run dropdown)
 class OplRunConfigurationType : ConfigurationTypeBase(
     "OPL_RUN",                          // Unique identifier
@@ -47,6 +49,11 @@ class OplRunConfigurationOptions : RunConfigurationOptions() {
     private val _additionalArgs = string("").provideDelegate(this, ::additionalArgs)
     private val _runConflictRefiner = property(false).provideDelegate(this, ::runConflictRefiner)
 
+    // Opcje dla WSL/Docker
+    private val _executionModeStr = string(ExecutionMode.LOCAL.name).provideDelegate(this, ::executionModeStr)
+    private val _wslDistribution = string("").provideDelegate(this, ::wslDistribution)
+    private val _dockerImage = string("").provideDelegate(this, ::dockerImage)
+
     var modelFile: String? by _modelFile
     var dataFile: String? by _dataFile
     var settingsFile: String? by _settingsFile
@@ -54,4 +61,8 @@ class OplRunConfigurationOptions : RunConfigurationOptions() {
     var timeoutSeconds: Int by _timeoutSeconds
     var additionalArgs: String? by _additionalArgs
     var runConflictRefiner: Boolean by _runConflictRefiner
+    
+    var executionModeStr: String? by _executionModeStr
+    var wslDistribution: String? by _wslDistribution
+    var dockerImage: String? by _dockerImage
 }

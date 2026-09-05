@@ -27,6 +27,7 @@ Plugin dodaje możliwość uruchamiania modeli OPL prosto z IDE przy pomocy wbud
 * **Limit czasu (Watchdog/Timeout)**: Zabezpieczenie chroniące przed zawieszeniem komputera przez nieskończenie długie obliczenia solvera. Użytkownik w ustawieniach konfiguracji może określić np. 60 sekund. Jeśli `oplrun` przekroczy ten czas, plugin wstrzykuje czerwony komunikat błędu do konsoli i bezpiecznie ubija proces solvera.
 * **Dodatkowe flagi (Additional CLI Args)**: Możliwość wstrzyknięcia dowolnych, specjalnych parametrów wywołania bezpośrednio do CLI polecenia (np. flagi tuningu).
 * **Conflict Refiner**: Checkbox pozwalający na łatwe "włączenie" analizatora konfliktów.
+* **Zdalne Środowisko (Execution Environment)**: Oprócz lokalnego wykonania, plugin wspiera bezproblemowe izolowane instancje solvera. Pozwala to na przetwarzanie modeli z bezpośrednim wywołaniem instancji systemu pod sub-systemem linuksowym (np. Ubuntu dla `WSL`) bądź w wyizolowanym kontenerze deweloperskim (`Docker`), w pełni maskując translację systemowych ścieżek Windowsa.
 
 ## 3. Konsola, Logi i Debugowanie
 Ogromny nacisk położyliśmy na polepszenie tzw. "Developer Experience" przy szukaniu błędów w modelach.

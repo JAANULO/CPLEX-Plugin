@@ -29,7 +29,9 @@ class OplErrorReportSubmitter : ErrorReportSubmitter() {
 
         val appInfo = ApplicationInfo.getInstance()
         val ideVersion = "${appInfo.versionName} ${appInfo.fullVersion}"
-        val pluginVersion = PluginManagerCore.getPlugin(PluginId.getId("com.github.cplexopl.opl-support"))?.version ?: "Unknown"
+        val pluginIdClass = Class.forName("com.intellij.openapi.extensions.PluginId")
+        val pluginId = pluginIdClass.getMethod("getId", String::class.java).invoke(null, "com.github.cplexopl.opl-support") as? PluginId
+        val pluginVersion = pluginId?.let { PluginManagerCore.getPlugin(it)?.version } ?: "Unknown"
         val osName = SystemInfo.getOsNameAndVersion()
 
         val title = URLEncoder.encode("[Bug]: $message", StandardCharsets.UTF_8.name())

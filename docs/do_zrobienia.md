@@ -41,6 +41,7 @@ Bez tego plugin nie spełnia swojego głównego celu.
 - `DONE` Obsługa wyboru plików `.mod` i `.dat`
 - `DONE` Integracja z konsolą IDE (stdout / stderr)
 - `DONE` **Asynchroniczność (UI Freezes):** Odklejenie procesu rozwiązywania od wątku EDT za pomocą `ProcessHandler` lub `Task.Backgroundable`, aby IDE nie zawieszało się przy trudnych modelach.
+- `DONE` **Wirtualizacja WSL i Docker (Execution Environment):** Pełne natywne wparcie, umożliwiające uruchomienie obciążeń matematycznych w zewnętrznej przestrzeni Linux bez dekonfiguracji ścieżek dyskowych maszyny gospodarza.
 
 ### 0.2 Integracja środowiska CPLEX
 - `DONE` Automatyczne wykrywanie instalacji (heurystyka ścieżek systemowych)

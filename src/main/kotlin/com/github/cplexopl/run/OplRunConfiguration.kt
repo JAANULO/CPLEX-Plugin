@@ -67,6 +67,18 @@ class OplRunConfiguration(
         }
         set(value) { options.cplexPath = value }
 
+    var executionMode: ExecutionMode
+        get() = try { ExecutionMode.valueOf(options.executionModeStr ?: "LOCAL") } catch (e: Exception) { ExecutionMode.LOCAL }
+        set(value) { options.executionModeStr = value.name }
+
+    var wslDistribution: String
+        get() = options.wslDistribution ?: ""
+        set(value) { options.wslDistribution = value }
+
+    var dockerImage: String
+        get() = options.dockerImage ?: ""
+        set(value) { options.dockerImage = value }
+
     override fun getConfigurationEditor() = OplRunConfigurationEditor(project)
 
     override fun checkConfiguration() {
@@ -86,26 +98,93 @@ class OplRunConfiguration(
 
     fun createCommandLine(tempModelFile: File): GeneralCommandLine {
         return GeneralCommandLine().apply {
-            exePath = cplexPath
-            
-            val args = options.additionalArgs
-            if (!args.isNullOrBlank()) {
-                addParameters(ParametersListUtil.parse(args))
+            when (executionMode) {
+                ExecutionMode.LOCAL -> {
+                    exePath = cplexPath
+                    val modelParentDir = File(modelFile).parentFile ?: File(".")
+                    workDirectory = modelParentDir
+                    
+                    val args = options.additionalArgs
+                    if (!args.isNullOrBlank()) {
+                        addParameters(ParametersListUtil.parse(args))
+                    }
+                    if (options.runConflictRefiner) {
+                        addParameter("-conflict")
+                    }
+                    addParameter(tempModelFile.absolutePath)
+                    if (dataFile.isNotEmpty()) {
+                        addParameter(dataFile)
+                    }
+                }
+                ExecutionMode.WSL -> {
+                    exePath = "wsl.exe"
+                    if (wslDistribution.isNotEmpty()) {
+                        addParameter("-d")
+                        addParameter(wslDistribution)
+                    }
+                    addParameter("--")
+                    addParameter(cplexPath)
+                    
+                    val args = options.additionalArgs
+                    if (!args.isNullOrBlank()) {
+                        addParameters(ParametersListUtil.parse(args))
+                    }
+                    if (options.runConflictRefiner) {
+                        addParameter("-conflict")
+                    }
+                    
+                    val translatedModel = OplPathTranslator.translateToWslPath(tempModelFile.absolutePath)
+                    val translatedData = if (dataFile.isNotEmpty()) OplPathTranslator.translateToWslPath(dataFile) else ""
+                    
+                    addParameter(translatedModel)
+                    if (translatedData.isNotEmpty()) {
+                        addParameter(translatedData)
+                    }
+                }
+                ExecutionMode.DOCKER -> {
+                    exePath = "docker"
+                    addParameter("run")
+                    addParameter("--rm")
+                    
+                    val projectDir = project.basePath ?: ""
+                    val wDir = "/workspace"
+                    val tempDir = System.getProperty("java.io.tmpdir").trimEnd('\\', '/')
+                    
+                    if (projectDir.isNotEmpty()) {
+                        addParameter("-v")
+                        addParameter("$projectDir:$wDir")
+                        addParameter("-w")
+                        addParameter(wDir)
+                    }
+                    if (tempDir.isNotEmpty()) {
+                        addParameter("-v")
+                        addParameter("$tempDir:/tmp")
+                    }
+                    
+                    addParameter(if (dockerImage.isEmpty()) "cplex" else dockerImage)
+                    addParameter(cplexPath)
+                    
+                    val args = options.additionalArgs
+                    if (!args.isNullOrBlank()) {
+                        addParameters(ParametersListUtil.parse(args))
+                    }
+                    if (options.runConflictRefiner) {
+                        addParameter("-conflict")
+                    }
+                    
+                    val translatedModel = OplPathTranslator.translateToDockerPath(tempModelFile.absolutePath, projectDir, wDir, tempDir)
+                    val translatedData = if (dataFile.isNotEmpty()) OplPathTranslator.translateToDockerPath(dataFile, projectDir, wDir, tempDir) else ""
+                    
+                    addParameter(translatedModel)
+                    if (translatedData.isNotEmpty()) {
+                        addParameter(translatedData)
+                    }
+                }
             }
-            
-            if (options.runConflictRefiner) {
-                addParameter("-conflict")
-            }
-
-            addParameter(tempModelFile.absolutePath)
-            if (dataFile.isNotEmpty()) {
-                addParameter(dataFile)
-            }
-            val modelParentDir = File(modelFile).parentFile ?: File(".")
-            workDirectory = modelParentDir
             withEnvironment(System.getenv())
         }
     }
+
 
     override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
         return OplRunState(environment, this)

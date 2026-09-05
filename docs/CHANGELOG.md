@@ -5,12 +5,14 @@
 ## [Unreleased]
 
 ### Added
-- **Bug Reporter:** Zbieranie danych środowiskowych (wersja IDE, wersja pluginu, OS) dla automatycznie generowanych zgłoszeń o błędach na GitHubie.
+- **Run Configuration:** Added `ExecutionMode` option to support remote execution environments via WSL (Windows Subsystem for Linux) and Docker containers, featuring automatic path translation.
+- **Bug Reporter:** Added collection of environment data (IDE version, plugin version, OS) for auto-generated error reports on GitHub.
 
 ### Changed
-- **Plugin Metadata:** Migracja opisu pluginu z `plugin.xml` do pliku `docs/DESCRIPTION.md` budowanego dynamicznie w Gradle.
+- **Plugin Metadata:** Migrated plugin description from `plugin.xml` to `docs/DESCRIPTION.md` generated dynamically in Gradle.
 
 ### Fixed
+- **Compatibility:** Eliminated a critical class validation error (`NoSuchFieldError` caused by Kotlin compiler specification on older JetBrains installations) for the Marketplace component by using safe Java Reflection in the `OplErrorReportSubmitter` module.
 - **Console Filters:** Optimized `OplInfeasibilityFilter` and `OplLinkFilter` to prevent catastrophic backtracking and drastically improve processing speed on extremely long console output lines.
 
 ## [1.4.9.4] - 2026-08-24

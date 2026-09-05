@@ -6,12 +6,14 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.ui.Messages
 import com.intellij.util.ui.FormBuilder
+import com.intellij.openapi.ui.ComboBox
 import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.JTextField
 import javax.swing.JCheckBox
 import java.awt.BorderLayout
+import java.awt.event.ItemEvent
 import com.github.cplexopl.utils.CplexPathFinder
 import com.github.cplexopl.settings.OplSettingsState
 import java.io.File
@@ -88,8 +90,33 @@ class OplRunConfigurationEditor(private val project: Project) : SettingsEditor<O
     }
     private val runConflictRefinerCheckbox = JCheckBox(com.github.cplexopl.OplBundle.message("runConfig.editor.conflict.checkbox"))
 
+    private val executionModeCombo = ComboBox(ExecutionMode.values()).apply {
+        addItemListener { e ->
+            if (e.stateChange == ItemEvent.SELECTED) {
+                updateVisibility()
+            }
+        }
+    }
+    
+    private val wslDistributionField = JTextField().apply {
+        toolTipText = com.github.cplexopl.OplBundle.message("runConfig.editor.wsl.tooltip")
+    }
+    
+    private val dockerImageField = JTextField().apply {
+        toolTipText = com.github.cplexopl.OplBundle.message("runConfig.editor.docker.tooltip")
+    }
+    
+    private fun updateVisibility() {
+        val mode = executionModeCombo.selectedItem as? ExecutionMode ?: ExecutionMode.LOCAL
+        wslDistributionField.isVisible = mode == ExecutionMode.WSL
+        dockerImageField.isVisible = mode == ExecutionMode.DOCKER
+    }
+
     // Build form panel
     private val panel: JPanel = FormBuilder.createFormBuilder()
+        .addLabeledComponent(com.github.cplexopl.OplBundle.message("runConfig.editor.executionMode.label"), executionModeCombo)
+        .addLabeledComponent(com.github.cplexopl.OplBundle.message("runConfig.editor.wsl.label"), wslDistributionField)
+        .addLabeledComponent(com.github.cplexopl.OplBundle.message("runConfig.editor.docker.label"), dockerImageField)
         .addLabeledComponent(com.github.cplexopl.OplBundle.message("runConfig.editor.modelFile.label"), modelFileField)
         .addLabeledComponent(com.github.cplexopl.OplBundle.message("runConfig.editor.dataFile.label"), dataFileField)
         .addLabeledComponent(com.github.cplexopl.OplBundle.message("runConfig.editor.settingsFile.label"), settingsFileField)
@@ -146,6 +173,11 @@ class OplRunConfigurationEditor(private val project: Project) : SettingsEditor<O
         timeoutField.text = config.timeoutSeconds.toString()
         additionalArgsField.text = config.additionalArgs ?: ""
         runConflictRefinerCheckbox.isSelected = config.runConflictRefiner
+        
+        executionModeCombo.selectedItem = config.executionMode
+        wslDistributionField.text = config.wslDistribution
+        dockerImageField.text = config.dockerImage
+        updateVisibility()
     }
 
     override fun applyEditorTo(config: OplRunConfiguration) {
@@ -158,6 +190,10 @@ class OplRunConfigurationEditor(private val project: Project) : SettingsEditor<O
         config.timeoutSeconds = timeoutField.text.toIntOrNull() ?: 0
         config.additionalArgs = additionalArgsField.text
         config.runConflictRefiner = runConflictRefinerCheckbox.isSelected
+        
+        config.executionMode = executionModeCombo.selectedItem as? ExecutionMode ?: ExecutionMode.LOCAL
+        config.wslDistribution = wslDistributionField.text
+        config.dockerImage = dockerImageField.text
 
         // On confirmation of "Apply" form, also update global path
         if (cplexPathField.text.isNotEmpty()) {
