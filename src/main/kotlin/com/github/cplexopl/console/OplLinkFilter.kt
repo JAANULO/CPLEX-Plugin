@@ -7,24 +7,45 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import java.util.regex.Pattern
 
 class OplLinkFilter(private val project: Project) : Filter {
-    // Pattern capturing file path and line, e.g. "C:\test.mod:15" or "test.mod:15"
-    private val pattern = Pattern.compile("(?<path>[a-zA-Z]:[/\\\\][^:]+\\.mod|[^:]+\\.mod):(?<line>\\d+)")
+    private val targetExtensions = listOf(".mod:", ".dat:", ".ops:", ".prj:", ".oplproject:")
 
     override fun applyFilter(line: String, entireLength: Int): Filter.Result? {
-        val matcher = pattern.matcher(line)
-        if (matcher.find()) {
-            val filePath = matcher.group("path").trim()
-            val lineNumber = matcher.group("line").toInt() - 1 // IntelliJ counts from 0
+        var matchIndex = -1
+        var matchedExt = ""
+        
+        for (ext in targetExtensions) {
+            matchIndex = line.indexOf(ext)
+            if (matchIndex != -1) {
+                matchedExt = ext
+                break
+            }
+        }
+        
+        if (matchIndex == -1) return null
+
+        val colonIndex = matchIndex + matchedExt.length - 1
+        var endIndex = colonIndex + 1
+        while (endIndex < line.length && line[endIndex].isDigit()) {
+            endIndex++
+        }
+        
+        if (endIndex == colonIndex + 1) return null
+        val lineNumber = line.substring(colonIndex + 1, endIndex).toIntOrNull()?.minus(1) ?: return null
+
+        val startOfPath = line.lastIndexOf(' ', matchIndex).takeIf { it != -1 }?.plus(1) ?: 0
+        val filePath = line.substring(startOfPath, colonIndex).trim()
+        
+        if (filePath.isEmpty()) return null
 
             val virtualFile = OplFileResolver.resolve(project, filePath)
 
             if (virtualFile != null) {
                 val info = OpenFileHyperlinkInfo(project, virtualFile, lineNumber)
-                val start = entireLength - line.length + matcher.start()
-                val end = entireLength - line.length + matcher.end()
+                val start = entireLength - line.length + startOfPath
+                val end = entireLength - line.length + endIndex
                 return Filter.Result(start, end, info)
             }
-        }
+        
         return null
     }
 }

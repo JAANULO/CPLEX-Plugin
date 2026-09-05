@@ -46,6 +46,23 @@ class OplConsoleFilterPerformanceTest : BasePlatformTestCase() {
         }
 
         println("Processed $numLines console log lines through OplLinkFilter and OplInfeasibilityFilter in $elapsed ms")
-        assertTrue("Filtrowanie 100k linii powinno trwać poniżej 5000 ms, trwało: ${elapsed}ms", elapsed < 5000)
+        assertTrue("Filtering 100k lines should take under 5000 ms, took: ${elapsed}ms", elapsed < 5000)
+    }
+
+    fun testCatastrophicBacktrackingOnGiantLine() {
+        val linkFilter = OplLinkFilter(project)
+        val infeasibilityFilter = OplInfeasibilityFilter(project)
+
+        // Create a giant line (5 million characters) without a valid file syntax
+        val giantLine = "X".repeat(5_000_000)
+
+        val elapsed = measureTimeMillis {
+            val len = giantLine.length
+            linkFilter.applyFilter(giantLine, len)
+            infeasibilityFilter.applyFilter(giantLine, len)
+        }
+
+        println("Processed giant line of 5MB in $elapsed ms")
+        assertTrue("Filtering a giant line should take a fraction of a second (protection against Catastrophic Backtracking), took: ${elapsed}ms", elapsed < 200)
     }
 }

@@ -4,6 +4,9 @@
 
 ## [Unreleased]
 
+### Fixed
+- **Console Filters:** Optimized `OplInfeasibilityFilter` and `OplLinkFilter` to prevent catastrophic backtracking and drastically improve processing speed on extremely long console output lines.
+
 ## [1.4.9.4] - 2026-08-24
 
 ### Added

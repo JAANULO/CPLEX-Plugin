@@ -11,6 +11,9 @@ class OplInfeasibilityFilter(private val project: Project) : Filter {
     private val conflictPattern = Pattern.compile("(?:at\\s+)?(?<line>\\d+):(?<colStart>\\d+)-(?<colEnd>\\d+)\\s+(?<path>[^\\s]+\\.(?:mod|dat))")
 
     override fun applyFilter(line: String, entireLength: Int): Filter.Result? {
+        // O(N) Fast rejection of long lines without valid CPLEX files, eliminating Catastrophic Backtracking
+        if (!line.contains(".mod") && !line.contains(".dat")) return null
+
         val matcher = conflictPattern.matcher(line)
         if (matcher.find()) {
             val filePath = matcher.group("path")
